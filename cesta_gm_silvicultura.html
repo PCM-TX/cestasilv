@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cesta GM Florestal — Silvicultura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --verde-escuro: #1a4731;
+  --verde-medio: #2d7a4f;
+  --verde-claro: #4CAF7D;
+  --verde-suave: #e8f5ee;
+  --amarelo: #f5c800;
+  --amarelo-escuro: #d4a800;
+  --grafite: #1e2328;
+  --grafite-medio: #2d3338;
+  --cinza-escuro: #4a5568;
+  --cinza-medio: #718096;
+  --cinza-claro: #e2e8f0;
+  --cinza-muito-claro: #f7f9fc;
+  --branco: #ffffff;
+  --vermelho: #e53e3e;
+  --laranja: #ed8936;
+  --azul: #3182ce;
+  --bg: #f0f4f8;
+  --bg-card: #ffffff;
+  --bg-header: #1a4731;
+  --text-primary: #1e2328;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.dark {
+  --bg: #111518;
+  --bg-card: #1e2328;
+  --bg-header: #0f1f18;
+  --text-primary: #f0f4f8;
+  --text-secondary: #a0aec0;
+  --text-muted: #718096;
+  --border: #2d3748;
+  --cinza-muito-claro: #1a2030;
+  --verde-suave: #1a3828;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;transition:var(--transition);-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input{font-family:inherit}
+/* ========= SCROLLBAR ========= */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--verde-medio);border-radius:3px}
+/* ========= HEADER ========= */
+#header{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--bg-header);padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 20px rgba(0,0,0,0.25)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-logo{width:40px;height:40px;background:linear-gradient(135deg,var(--verde-claro),var(--amarelo));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.header-title{color:#fff;font-weight:700;font-size:15px;line-height:1.2}
+.header-sub{color:rgba(255,255,255,0.65);font-size:11px;font-weight:400}
+.header-right{display:flex;align-items:center;gap:10px}
+.btn-back{display:none;align-items:center;gap:6px;color:#fff;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:500;transition:var(--transition)}
+.btn-back:hover{background:rgba(255,255,255,0.22)}
+.btn-back.visible{display:flex}
+.btn-theme{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;transition:var(--transition);border:1px solid rgba(255,255,255,0.15)}
+.btn-theme:hover{background:rgba(255,255,255,0.2)}
+.cart-btn-header{display:flex;align-items:center;gap:6px;background:var(--amarelo);color:var(--grafite);border-radius:9px;padding:7px 14px;font-weight:700;font-size:13px;transition:var(--transition)}
+.cart-btn-header:hover{background:var(--amarelo-escuro);transform:translateY(-1px)}
+.cart-badge{background:var(--vermelho);color:#fff;border-radius:20px;padding:2px 7px;font-size:11px;font-weight:700;min-width:20px;text-align:center}
+/* ========= MAIN ========= */
+#main{margin-top:64px;min-height:calc(100vh - 64px)}
+/* ========= SCREEN ========= */
+.screen{display:none;animation:fadeIn 0.3s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* ========= HERO ========= */
+.hero{position:relative;background:linear-gradient(135deg,var(--verde-escuro) 0%,#1e5c3a 50%,#266644 100%);color:#fff;padding:40px 20px 36px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-inner{position:relative;max-width:900px;margin:0 auto;display:flex;align-items:center;gap:24px}
+.hero-icon{font-size:60px;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.hero-text{}
+.hero-eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--amarelo);font-weight:600;margin-bottom:8px}
+.hero-h1{font-size:clamp(22px,4vw,34px);font-weight:800;line-height:1.15;margin-bottom:10px}
+.hero-desc{color:rgba(255,255,255,0.72);font-size:14px;line-height:1.6;max-width:500px}
+/* ========= INDICATORS ========= */
+.indicators{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:20px;max-width:900px;margin:0 auto}
+@media(min-width:600px){.indicators{grid-template-columns:repeat(4,1fr)}}
+.ind-card{background:var(--bg-card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);border:1px solid var(--border);text-align:center;transition:var(--transition)}
+.ind-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.ind-icon{font-size:24px;margin-bottom:6px}
+.ind-value{font-size:22px;font-weight:800;color:var(--verde-medio);line-height:1}
+.ind-label{font-size:11px;color:var(--text-muted);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+/* ========= SEARCH SECTION ========= */
+.section-header{padding:0 20px;max-width:900px;margin:0 auto 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.section-title{font-size:18px;font-weight:700;color:var(--text-primary)}
+.search-bar{position:relative;padding:0 20px;max-width:900px;margin:0 auto 20px}
+.search-bar input{width:100%;padding:12px 16px 12px 44px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text-primary);font-size:14px;transition:var(--transition);box-shadow:var(--shadow-sm)}
+.search-bar input:focus{outline:none;border-color:var(--verde-medio);box-shadow:0 0 0 3px rgba(45,122,79,0.15)}
+.search-icon{position:absolute;left:32px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:18px;pointer-events:none}
+/* ========= GM CARDS GRID ========= */
+.gm-grid{display:grid;grid-template-columns:1fr;gap:16px;padding:0 20px 100px;max-width:900px;margin:0 auto}
+@media(min-width:500px){.gm-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:800px){.gm-grid{grid-template-columns:repeat(3,1fr)}}
+.gm-card{background:var(--bg-card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--border);transition:var(--transition);cursor:pointer;display:flex;flex-direction:column}
+.gm-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.gm-card-img{height:130px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden;flex-shrink:0}
+.gm-card-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.gm-card-title{font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.3}
+.gm-card-op{font-size:10px;color:var(--verde-medio);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.gm-tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.3px}
+.tag-green{background:var(--verde-suave);color:var(--verde-escuro)}
+.tag-yellow{background:rgba(245,200,0,0.15);color:#8a6e00}
+.dark .tag-yellow{background:rgba(245,200,0,0.15);color:var(--amarelo)}
+.tag-gray{background:var(--cinza-claro);color:var(--cinza-escuro)}
+.dark .tag-gray{background:var(--border);color:var(--text-secondary)}
+.gm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-top:8px;border-top:1px solid var(--border)}
+.gm-stat{text-align:center}
+.gm-stat-val{font-size:14px;font-weight:700;color:var(--texto-primary)}
+.gm-stat-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px}
+.btn-open-cesta{width:100%;margin-top:8px;padding:10px;background:linear-gradient(135deg,var(--verde-medio),var(--verde-escuro));color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:700;letter-spacing:.3px;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-open-cesta:hover{background:linear-gradient(135deg,var(--verde-claro),var(--verde-medio));transform:scale(1.02)}
+
+/* ========= CESTA SCREEN ========= */
+#screen-cesta{padding-bottom:100px}
+.cesta-banner{position:relative;min-height:160px;display:flex;align-items:flex-end;padding:20px;color:#fff;overflow:hidden}
+.cesta-banner-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:100px;opacity:.15}
+.cesta-banner-info{position:relative;flex:1}
+.cesta-banner-gm{font-size:clamp(16px,3vw,24px);font-weight:800;line-height:1.2;margin-bottom:6px}
+.cesta-banner-sub{font-size:12px;opacity:.8;margin-bottom:10px}
+.cesta-banner-stats{display:flex;flex-wrap:wrap;gap:12px}
+.cesta-stat{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 12px;text-align:center;backdrop-filter:blur(4px)}
+.cesta-stat-val{font-size:16px;font-weight:800}
+.cesta-stat-lbl{font-size:9px;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+/* controls bar */
+.cesta-controls{padding:16px 20px;background:var(--bg-card);border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:100;box-shadow:var(--shadow-sm)}
+.cesta-controls-row1{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.cesta-search{flex:1;min-width:200px;position:relative}
+.cesta-search input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-primary);font-size:13px;transition:var(--transition)}
+.cesta-search input:focus{outline:none;border-color:var(--verde-medio);box-shadow:0 0 0 3px rgba(45,122,79,0.12)}
+.cesta-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:16px}
+.select-filter{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-primary);font-size:13px;cursor:pointer;transition:var(--transition)}
+.select-filter:focus{outline:none;border-color:var(--verde-medio)}
+.cesta-controls-row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn-sm{padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:var(--transition)}
+.btn-outline{border:1.5px solid var(--border);color:var(--text-secondary);background:var(--bg)}
+.btn-outline:hover{border-color:var(--verde-medio);color:var(--verde-medio)}
+.btn-solid-green{background:var(--verde-medio);color:#fff}
+.btn-solid-green:hover{background:var(--verde-escuro)}
+.sort-label{font-size:12px;color:var(--text-muted);margin-left:auto}
+/* material list */
+.material-list{padding:12px 20px}
+.mat-item{background:var(--bg-card);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;border:1.5px solid var(--border);transition:var(--transition);position:relative}
+.mat-item.selected{border-color:var(--verde-medio);background:var(--verde-suave)}
+.dark .mat-item.selected{background:#1a3828}
+.mat-item:hover{box-shadow:var(--shadow-md)}
+.mat-row1{display:flex;align-items:flex-start;gap:12px}
+.mat-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);background:var(--bg);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition);margin-top:2px}
+.mat-check.checked{background:var(--verde-medio);border-color:var(--verde-medio);color:#fff}
+.mat-info{flex:1}
+.mat-ni{font-size:11px;color:var(--verde-medio);font-weight:700;margin-bottom:2px;font-family:monospace}
+.mat-desc{font-size:13px;font-weight:600;color:var(--text-primary);line-height:1.3;margin-bottom:4px}
+.mat-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.mat-row2{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.mat-price{font-size:13px}
+.mat-price-val{font-size:16px;font-weight:800;color:var(--verde-medio)}
+.mat-price-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase}
+.mat-qty-ctrl{display:flex;align-items:center;gap:6px}
+.qty-btn{width:30px;height:30px;border-radius:7px;background:var(--cinza-muito-claro);border:1.5px solid var(--border);color:var(--text-primary);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.qty-btn:hover{background:var(--verde-medio);border-color:var(--verde-medio);color:#fff}
+.qty-input{width:48px;height:30px;text-align:center;border:1.5px solid var(--border);border-radius:7px;background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:700;transition:var(--transition)}
+.qty-input:focus{outline:none;border-color:var(--verde-medio)}
+.mat-total{font-size:14px;font-weight:800;color:var(--amarelo-escuro);white-space:nowrap}
+.dark .mat-total{color:var(--amarelo)}
+.planned-badge{font-size:10px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.planned-ok{background:rgba(76,175,125,0.15);color:var(--verde-medio)}
+.planned-over{background:rgba(237,137,54,0.15);color:var(--laranja)}
+.mat-extra-badge{background:rgba(49,130,206,0.15);color:var(--azul);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700}
+/* floating cart */
+.floating-cart{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:900;width:calc(100% - 32px);max-width:600px;background:linear-gradient(135deg,var(--verde-medio),var(--verde-escuro));color:#fff;border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 30px rgba(26,71,49,0.4);cursor:pointer;transition:var(--transition);border:none}
+.floating-cart:hover{transform:translateX(-50%) translateY(-2px);box-shadow:0 12px 40px rgba(26,71,49,0.5)}
+.floating-cart.hidden{display:none}
+.fc-left{display:flex;flex-direction:column;gap:2px}
+.fc-label{font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+.fc-stats{font-size:13px;font-weight:600}
+.fc-btn{background:var(--amarelo);color:var(--grafite);padding:8px 16px;border-radius:8px;font-weight:800;font-size:13px;white-space:nowrap}
+/* ========= CARRINHO SCREEN ========= */
+#screen-carrinho{padding-bottom:40px}
+.cart-header-area{padding:20px;background:var(--bg-card);border-bottom:1px solid var(--border);max-width:900px;margin:0 auto}
+.cart-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.cart-title{font-size:20px;font-weight:800;color:var(--text-primary)}
+.cart-summary-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:600px){.cart-summary-cards{grid-template-columns:repeat(4,1fr)}}
+.cart-sum-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.cart-sum-val{font-size:18px;font-weight:800;color:var(--verde-medio)}
+.cart-sum-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.cart-actions{padding:16px 20px;display:flex;flex-wrap:wrap;gap:10px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border)}
+.btn-lg{padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;transition:var(--transition)}
+.btn-verde{background:var(--verde-medio);color:#fff}
+.btn-verde:hover{background:var(--verde-escuro)}
+.btn-amarelo{background:var(--amarelo);color:var(--grafite)}
+.btn-amarelo:hover{background:var(--amarelo-escuro)}
+.btn-danger{background:rgba(229,62,62,0.1);color:var(--vermelho);border:1.5px solid rgba(229,62,62,0.2)}
+.btn-danger:hover{background:rgba(229,62,62,0.2)}
+.btn-secondary{background:var(--cinza-muito-claro);color:var(--text-secondary);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:var(--cinza-claro)}
+/* cart items */
+.cart-items-section{padding:16px 20px;max-width:900px;margin:0 auto}
+.cart-section-title{font-size:14px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.cart-item{background:var(--bg-card);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;border:1.5px solid var(--border);display:flex;gap:12px;align-items:flex-start;transition:var(--transition)}
+.cart-item.extra{border-color:rgba(49,130,206,0.3);background:rgba(49,130,206,0.04)}
+.dark .cart-item.extra{background:rgba(49,130,206,0.08)}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-ni{font-size:11px;color:var(--verde-medio);font-weight:700;font-family:monospace}
+.cart-item-desc{font-size:13px;font-weight:600;color:var(--text-primary);margin:2px 0 6px;line-height:1.3;word-break:break-word}
+.cart-item-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cart-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.cart-item-total{font-size:16px;font-weight:800;color:var(--verde-medio)}
+.btn-del{width:28px;height:28px;border-radius:7px;background:rgba(229,62,62,0.1);color:var(--vermelho);display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--transition)}
+.btn-del:hover{background:var(--vermelho);color:#fff}
+/* empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.empty-icon{font-size:60px;margin-bottom:16px}
+.empty-title{font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+.empty-desc{font-size:14px;line-height:1.6}
+/* ========= MODAL ========= */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex;animation:fadeIn 0.2s ease}
+.modal{background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+.form-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-primary);font-size:14px;transition:var(--transition)}
+.form-input:focus{outline:none;border-color:var(--verde-medio);box-shadow:0 0 0 3px rgba(45,122,79,0.12)}
+.form-input.error{border-color:var(--vermelho)}
+.form-error{font-size:11px;color:var(--vermelho);margin-top:4px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn-lg{flex:1;justify-content:center}
+/* ========= TOAST ========= */
+.toast-container{position:fixed;bottom:80px;right:20px;z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--bg-card);border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-lg);border-left:4px solid var(--verde-medio);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--text-primary);max-width:300px;animation:toastIn 0.3s ease;pointer-events:auto}
+.toast.success{border-color:var(--verde-medio)}
+.toast.error{border-color:var(--vermelho)}
+.toast.warning{border-color:var(--laranja)}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.toast-icon{font-size:16px}
+/* ========= RESPONSIVE ========= */
+@media(max-width:400px){
+  .header-title{font-size:13px}
+  .hero{padding:28px 16px 24px}
+  .gm-grid{padding:0 12px 100px}
+  .material-list{padding:12px}
+}
+.no-results{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px}
+.item-count-badge{background:var(--verde-suave);color:var(--verde-escuro);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700}
+.dark .item-count-badge{background:rgba(45,122,79,0.2);color:var(--verde-claro)}
+/* separator */
+.sep{height:1px;background:var(--border);margin:20px 0}
+
+/* ========= IMPORT MODAL ========= */
+.import-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.import-overlay.open{display:flex;animation:fadeIn 0.25s ease}
+.import-modal{background:var(--bg-card);border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);display:flex;flex-direction:column}
+.import-header{padding:22px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.import-title{font-size:18px;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.import-close{width:32px;height:32px;border-radius:8px;background:var(--cinza-muito-claro);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:18px;transition:var(--transition)}
+.import-close:hover{background:rgba(229,62,62,0.1);color:var(--vermelho)}
+.import-body{padding:20px 24px;flex:1}
+.import-step{display:none}
+.import-step.active{display:block;animation:fadeIn 0.2s ease}
+/* Drop zone */
+.dropzone{border:2.5px dashed var(--border);border-radius:var(--radius);padding:40px 20px;text-align:center;cursor:pointer;transition:var(--transition);background:var(--cinza-muito-claro);position:relative}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--verde-medio);background:var(--verde-suave)}
+.dropzone-icon{font-size:48px;margin-bottom:12px}
+.dropzone-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.dropzone-sub{font-size:13px;color:var(--text-muted);line-height:1.5}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.format-badges{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.format-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;border:1.5px solid var(--border);color:var(--text-muted)}
+/* loading */
+.import-loading{text-align:center;padding:40px 20px}
+.spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--verde-medio);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* preview */
+.preview-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.prev-card{background:var(--cinza-muito-claro);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.prev-val{font-size:20px;font-weight:800;color:var(--verde-medio)}
+.prev-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.preview-table{background:var(--cinza-muito-claro);border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);margin-bottom:16px;max-height:220px;overflow-y:auto}
+.preview-table table{width:100%;border-collapse:collapse;font-size:12px}
+.preview-table th{background:var(--verde-escuro);color:#fff;padding:8px 10px;text-align:left;font-weight:600;white-space:nowrap;position:sticky;top:0}
+.preview-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-primary);white-space:nowrap}
+.preview-table tr:last-child td{border-bottom:none}
+.preview-table tr:hover td{background:var(--verde-suave)}
+.merge-options{margin-bottom:18px}
+.merge-opt{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);margin-bottom:8px}
+.merge-opt:hover{border-color:var(--verde-medio)}
+.merge-opt.selected{border-color:var(--verde-medio);background:var(--verde-suave)}
+.dark .merge-opt.selected{background:#1a3828}
+.merge-opt input[type=radio]{margin-top:2px;accent-color:var(--verde-medio)}
+.merge-opt-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:2px}
+.merge-opt-desc{font-size:11px;color:var(--text-muted);line-height:1.4}
+.diff-list{margin-bottom:14px}
+.diff-item{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;color:var(--text-secondary)}
+.diff-badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.diff-new{background:rgba(76,175,125,0.15);color:var(--verde-medio)}
+.diff-upd{background:rgba(237,137,54,0.15);color:var(--laranja)}
+.diff-rem{background:rgba(229,62,62,0.15);color:var(--vermelho)}
+.diff-same{background:var(--cinza-claro);color:var(--cinza-escuro)}
+/* success */
+.import-success{text-align:center;padding:30px 20px}
+.success-icon{font-size:56px;margin-bottom:16px;animation:pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.success-title{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:8px}
+.success-desc{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:20px}
+.download-html-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--verde-medio),var(--verde-escuro));color:#fff;border-radius:var(--radius-sm);padding:12px 24px;font-size:14px;font-weight:700;transition:var(--transition);border:none;cursor:pointer;margin:0 auto}
+.download-html-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,71,49,0.4)}
+.info-box{background:rgba(245,200,0,0.1);border:1px solid rgba(245,200,0,0.3);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:var(--text-secondary);line-height:1.5;margin-top:12px;display:flex;gap:8px;align-items:flex-start}
+/* header import btn */
+.btn-import{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;transition:var(--transition)}
+.btn-import:hover{background:rgba(255,255,255,0.2)}
+.import-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.import-footer .btn-lg{min-width:100px;justify-content:center}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="header-left">
+    <div class="header-logo">🌿</div>
+    <div>
+      <div class="header-title">Cesta GM Florestal</div>
+      <div class="header-sub">Operação Silvicultura</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-back" id="btnBack" onclick="voltarHome()">&#8592; Voltar</button>
+    
+    <button class="btn-import" onclick="abrirImport()" title="Importar nova cesta">📥 Importar</button>
+    <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    <button class="cart-btn-header" onclick="irParaCarrinho()">
+      🛒 <span id="cartHeaderCount">0</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ===== SCREEN HOME ===== -->
+  <div id="screen-home" class="screen active">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="hero-icon">🚜</div>
+        <div class="hero-text">
+          <div class="hero-eyebrow">🌿 Operação Silvicultura</div>
+          <h1 class="hero-h1">Cesta GM Florestal<br>Silvicultura</h1>
+          <p class="hero-desc">Selecione uma Grande Manutenção, escolha os materiais, ajuste quantidades e exporte a solicitação em Excel.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="indicators" id="indicators"></div>
+
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchHome" placeholder="Buscar Grande Manutenção..." oninput="filtrarGMs()">
+    </div>
+
+    <div style="padding:0 20px;max-width:900px;margin:0 auto 12px">
+      <div class="section-title">Grandes Manutenções disponíveis</div>
+    </div>
+
+    <div class="gm-grid" id="gmGrid"></div>
+  </div>
+
+  <!-- ===== SCREEN CESTA ===== -->
+  <div id="screen-cesta" class="screen">
+    <div class="cesta-banner" id="cestaBanner">
+      <div class="cesta-banner-bg" id="cestaBannerIcon"></div>
+      <div class="cesta-banner-info">
+        <div class="gm-card-op">🌿 SILVICULTURA</div>
+        <div class="cesta-banner-gm" id="cestaGMTitle"></div>
+        <div class="cesta-banner-sub" id="cestaGMSub"></div>
+        <div class="cesta-banner-stats" id="cestaStats"></div>
+      </div>
+    </div>
+
+    <div class="cesta-controls">
+      <div class="cesta-controls-row1">
+        <div class="cesta-search">
+          <span class="cesta-search-icon">🔍</span>
+          <input type="text" id="searchCesta" placeholder="Buscar por NI ou descrição..." oninput="filtrarMateriais()">
+        </div>
+        <select class="select-filter" id="filterAquisicao" onchange="filtrarMateriais()">
+          <option value="">Todas as aquisições</option>
+          <option value="COMPRA">COMPRA</option>
+          <option value="ESTOQUE">ESTOQUE</option>
+          <option value="FABRICAÇÃO CM">FABRICAÇÃO CM</option>
+        </select>
+        <select class="select-filter" id="sortMat" onchange="filtrarMateriais()">
+          <option value="desc">Ordenar: Descrição</option>
+          <option value="ni">Ordenar: NI</option>
+          <option value="preco">Ordenar: Preço ↑</option>
+          <option value="precoD">Ordenar: Preço ↓</option>
+        </select>
+      </div>
+      <div class="cesta-controls-row2">
+        <button class="btn-sm btn-solid-green" onclick="selecionarTodos()">✓ Selecionar todos</button>
+        <button class="btn-sm btn-outline" onclick="desmarcarTodos()">✕ Desmarcar todos</button>
+        <span id="selectedCountLabel" style="font-size:12px;color:var(--text-muted);margin-left:4px"></span>
+      </div>
+    </div>
+
+    <div class="material-list" id="materialList"></div>
+
+    <button class="floating-cart hidden" id="floatingCart" onclick="irParaCarrinho()">
+      <div class="fc-left">
+        <span class="fc-label">Ir para carrinho</span>
+        <span class="fc-stats" id="fcStats">0 materiais | 0 itens | R$ 0,00</span>
+      </div>
+      <span class="fc-btn">🛒 CARRINHO</span>
+    </button>
+  </div>
+
+  <!-- ===== SCREEN CARRINHO ===== -->
+  <div id="screen-carrinho" class="screen">
+    <div class="cart-header-area">
+      <div class="cart-title-row">
+        <div>
+          <div class="cart-title">🛒 Carrinho de Materiais</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="cartGMLabel"></div>
+        </div>
+      </div>
+      <div class="cart-summary-cards" id="cartSummaryCards"></div>
+    </div>
+
+    <div class="cart-actions">
+      <button class="btn-lg btn-secondary" onclick="voltarCesta()">&#8592; Continuar selecionando</button>
+      <button class="btn-lg btn-verde" onclick="abrirModalExtra()">➕ Material Extra</button>
+      <button class="btn-lg btn-amarelo" onclick="exportarExcel()">📥 Baixar Excel</button>
+      <button class="btn-lg btn-danger" onclick="limparCarrinho()">🗑 Limpar</button>
+    </div>
+
+    <div class="cart-items-section">
+      <div class="cart-section-title">Itens da solicitação</div>
+      <div id="cartItemsList"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL MATERIAL EXTRA -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">➕ Adicionar Material Extra</div>
+    <div class="modal-sub">Material não listado na cesta padrão</div>
+    <div class="form-group">
+      <label class="form-label">Código do Material *</label>
+      <input class="form-input" id="extraCodigo" placeholder="Ex: 12345678" type="text">
+      <div class="form-error" id="erroExtraCodigo" style="display:none">Campo obrigatório</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Quantidade *</label>
+      <input class="form-input" id="extraQtd" placeholder="Ex: 2" type="number" min="1">
+      <div class="form-error" id="erroExtraQtd" style="display:none">Quantidade mínima: 1</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrição (opcional)</label>
+      <input class="form-input" id="extraDesc" placeholder="Descreva o material...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observação (opcional)</label>
+      <input class="form-input" id="extraObs" placeholder="Observações adicionais...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-lg btn-secondary" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-lg btn-verde" onclick="adicionarExtra()">➕ Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ======================== BASE DE DADOS ========================
+let materiaisBase = [{"operacao":"SILVICULTURA","ni":"27032733","descricao":"CALCO JOHN DEERE/L78839","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":6.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008483","descricao":"CALCO JOHN DEERE/L78838","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":7.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032890","descricao":"CALCO PR JOHN DEERE/L77262","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":11.35,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032929","descricao":"CALCO JOHN DEERE/24M7150","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":3.38,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25125094","descricao":"ANEL O JOHN DEERE/51M7042","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":8.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008521","descricao":"ROLAMENTO JOHN DEERE/AL114942","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":193.11,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009444","descricao":"DISCO JOHN DEERE/L102489","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":28.39,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056862","descricao":"BUCHA JOHN DEERE/L41187","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":50.07,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25196576","descricao":"ANEL O JOHN DEERE/51M7048","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":2.25,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27025124","descricao":"ANEL O JOHN DEERE/L41526","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":4.27,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008478","descricao":"ANEL O JOHN DEERE/L78683","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":8.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27006246","descricao":"RETENTOR JOHN DEERE/L157568","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":14.13,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008517","descricao":"ANEL JOHN DEERE/R34140","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":35.82,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27006367","descricao":"ANEL JOHN DEERE/L100522","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":40.23,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008492","descricao":"ANEL O JOHN DEERE/L78687","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":47.5,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008512","descricao":"BUCHA JOHN DEERE/L100935","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":51.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27021005","descricao":"ARRUELA ENCOST JOHN DEERE/L102565","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":111.38,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008481","descricao":"ROLAMENTO ROL CON JOHN DEERE/AL208149","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":225.78,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008486","descricao":"CAPA JOHN DEERE/JD10498","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":74.97,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008518","descricao":"CONE JOHN DEERE/JD10497","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":132.64,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27099561","descricao":"VEDACAO JOHN DEERE/AL229501","grandeManutencao":"CAIXA DE TRAÇÃO JD 6K","precoLiquido":43.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27146915","descricao":"PLATO EMBR JOHN DEERE/R545831","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":132.24,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175033","descricao":"DISCO EMBREAGEM JOHN DEERE/RE326611","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":107.86,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25160239","descricao":"ANEL O JOHN DEERE/U12331","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":16.42,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25150910","descricao":"ANEL JOHN DEERE/R39283","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":40.92,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25150911","descricao":"ANEL O JOHN DEERE/R129726","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":13.19,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27001625","descricao":"ARRUELA JOHN DEERE/R93317","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":105.74,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175136","descricao":"ARRUELA JOHN DEERE/R107620","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":75.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175032","descricao":"JUNTA VED JOHN DEERE/R110514","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":25.88,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175684","descricao":"CONE ROLAMENTO JOHN DEERE/JD10527","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":202.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27001633","descricao":"CAPA JOHN DEERE/JD8247","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":81.61,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25150908","descricao":"CONE ROL ROL CON JOHN DEERE/JD8979","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":70.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25150909","descricao":"CAPA JOHN DEERE/JD8267","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":60.12,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175137","descricao":"VEDACAO TRATOR J. DEERE R115405","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":22.32,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175687","descricao":"CALCO JOHN DEERE/R49004","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":7.52,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175135","descricao":"CALCO JOHN DEERE/R49003","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":7.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25175686","descricao":"CALCO JOHN DEERE/R49002","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":5.26,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27099561","descricao":"VEDACAO JOHN DEERE/AL229501","grandeManutencao":"CAIXA DE TRAÇÃO JD 7200","precoLiquido":43.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032872","descricao":"PARAFUSO JOHN DEERE/L77173","grandeManutencao":"EIXO CARDAN JD 6100","precoLiquido":36.4,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27020641","descricao":"PARAFUSO FLANG DENT JOHN DEERE/L80445","grandeManutencao":"EIXO CARDAN JD 6100","precoLiquido":46.28,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27091381","descricao":"CRUZETA JOHN DEERE/AL215219","grandeManutencao":"EIXO CARDAN JD 6100","precoLiquido":2549.8,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27020641","descricao":"PARAFUSO FLANG DENT JOHN DEERE/L80445","grandeManutencao":"EIXO CARDAN JD 6115","precoLiquido":46.28,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27158658","descricao":"PARAFUSO SEXT JOHN DEERE/L220217","grandeManutencao":"EIXO CARDAN JD 6115","precoLiquido":42.24,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032872","descricao":"PARAFUSO JOHN DEERE/L77173","grandeManutencao":"EIXO CARDAN JD 6115","precoLiquido":36.4,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27091381","descricao":"CRUZETA JOHN DEERE/AL215219","grandeManutencao":"EIXO CARDAN JD 6135","precoLiquido":2549.8,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27020641","descricao":"PARAFUSO FLANG DENT JOHN DEERE/L80445","grandeManutencao":"EIXO CARDAN JD 6135","precoLiquido":46.28,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032872","descricao":"PARAFUSO JOHN DEERE/L77173","grandeManutencao":"EIXO CARDAN JD 6135","precoLiquido":36.4,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008505","descricao":"PARAFUSO JOHN DEERE/R151507","grandeManutencao":"EIXO CARDAN JD 7200","precoLiquido":120.16,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27194957","descricao":"ESPAÇADORL41174","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2.42,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107993","descricao":"ARRUELAL112215","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":4.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25189331","descricao":"ESPAÇADOR, ESPESSURA 0,5 MML41171","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":4.52,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27122779","descricao":"PARAFUSO SEXTAVADO, M12 X 30/19M8011","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":4.81,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27122779","descricao":"ARRUELA DE FURO REDONDOL40985","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":5.3,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25233056","descricao":"ANEL OL40273","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":6.38,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27000855","descricao":"ARRUELA DE FURO REDONDOL40982","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":8.66,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25167499","descricao":"ESPAÇADOR SIMPLES CIRCULARL55607","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":10.48,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045659","descricao":"RETENTORCQ27989","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":10.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27018016","descricao":"PARAFUSOCQ49408","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":10.81,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25170189","descricao":"ESPAÇADORCQ27293","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":11.04,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25174602","descricao":"ANEL/CQ29407","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":11.67,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27018010","descricao":"ANEL-OL40282","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":12.33,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25185180","descricao":"ESPAÇADOR SIMPLES CIRCULARL55606","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":12.5,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27004860","descricao":"PORCA COM FLANGEL220995","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":12.63,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25267500","descricao":"ANEL O/L40273","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":13.44,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25174603","descricao":"JUMPERCQ64245","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":14.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127206","descricao":"ESPAÇADOR, ESPESSURA DE 0.75 MML55608","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":14.81,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045647","descricao":"ARRUELA DE FURO REDONDOL40995","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":14.81,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25189332","descricao":"CARCAÇACQ27248","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":14.84,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127213","descricao":"ESPAÇADORCQ27274","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":15.64,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25267500","descricao":"CUBO DO ALOJAMENTO DA ARTICULAÇÃOL41928","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":16.18,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127194","descricao":"ESPAÇADORCQ27272","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":17.72,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27079943","descricao":"PARAFUSO SEXTAVADO, M20 X 15019M7921","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":18.41,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25233059","descricao":"CARCAÇACQ27249","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":18.69,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25190766","descricao":"ESPAÇADORL41175","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":23.6,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25174602","descricao":"VEDAÇÃO DO PISTÃO E DA HASTEL41164","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":25.8,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25125084","descricao":"ESPAÇADORCQ27273","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":26.36,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27036821","descricao":"ESPAÇADORL40986","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":26.62,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25190765","descricao":"PARAFUSO SEXTAVADO, M12 X 3019M8011","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":26.78,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016266","descricao":"ARRUELACQ27305","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":28.86,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25254583","descricao":"ESPAÇADORCQ27291","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":29.92,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154195","descricao":"RETENTOR JOHN DEERE/CQ27989","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":32.8,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25125064","descricao":"HASTE DO CILINDRO DE DIREÇÃOCQ27307","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":32.84,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27052008","descricao":"PORCA COM FLANGE HEXAGONAL, M1814M7238","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27036823","descricao":"ESPAÇADORCQ27276","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056868","descricao":"ESPAÇADORCQ27278","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056869","descricao":"ESPAÇADORCQ27279","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056870","descricao":"ESPAÇADORCQ27280","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032868","descricao":"ESPAÇADORCQ27281","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056872","descricao":"ESPAÇADORCQ27282","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27052015","descricao":"ESPAÇADORCQ27283","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27063618","descricao":"ESPAÇADORL63128","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":37.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25167501","descricao":"ESPAÇADORCQ27271","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":38.49,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25118698","descricao":"BOCAL/CQ29345","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":39.1,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25132562","descricao":"ARRUELAL40274","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":40.68,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032807","descricao":"PARAFUSO19M7902","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":40.97,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032828","descricao":"ARRUELA JOHN DEERE/L40121","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":42.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127196","descricao":"ESPAÇADORCQ27295","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":43.01,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27082897","descricao":"ESPAÇADORCQ27275","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":44.67,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27036848","descricao":"EIXOCQ27251","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":45.26,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016259","descricao":"PORTA-PLANETÁRIOSL206212","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":48.79,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25151216","descricao":"ARRUELAL41006","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":49.42,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009855","descricao":"PARAFUSOCQ64114","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":50.16,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127211","descricao":"ANEL ELÁSTICO EXTERNO40M4624","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":51.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27036818","descricao":"ANEL-OCQ50412","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":53.02,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107762","descricao":"ESPAÇADORCQ27205","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":53.28,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008506","descricao":"ARRUELA DE FURO REDONDOL40984","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":55.23,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25150493","descricao":"PARAFUSO SEXTAVADO, M16 X 5019M7174","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":55.31,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27151358","descricao":"ESPAÇADORL63127","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":55.82,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107988","descricao":"PORCA DE SEGURANÇAL204993","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":58.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032798","descricao":"ESPAÇADORCQ27292","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":58.13,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127201","descricao":"ANEL-OCQ64113","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":58.62,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27036918","descricao":"CONE DE ROLAMENTOJD9053","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":59.26,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27047170","descricao":"COROACQ27301","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":60.18,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25170704","descricao":"ARRUELA DE PRESSÃOR75522","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":61.62,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27039763","descricao":"VEDAÇÃOL40285","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":62.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107962","descricao":"ESPAÇADORCQ27229","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":65.54,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127195","descricao":"ARRUELA DE FURO REDONDOL78009","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":66.01,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107753","descricao":"ESPAÇADORCQ27202","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":67.97,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25125091","descricao":"ARRUELA DE FURO REDONDOL40983","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":71.29,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195214","descricao":"ESPAÇADORCQ27287","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":71.29,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25254584","descricao":"ROLAMENTO CILÍNDRICOJD10250","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":71.84,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107955","descricao":"ESPAÇADORCQ27207","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":73.09,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27051703","descricao":"ARRUELA DE FURO REDONDOL40987","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":73.32,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107945","descricao":"ESPAÇADORCQ27206","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":74.48,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107984","descricao":"ESPAÇADORCQ27296","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":75.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107730","descricao":"ESPAÇADORCQ27200","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":75.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27090808","descricao":"ESPAÇADORCQ27222","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":75.44,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27032946","descricao":"ESPAÇADORCQ27290","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":76.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016260","descricao":"ESPAÇADORCQ27285","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":81.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27171967","descricao":"ESPAÇADORCQ27284","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":82.58,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008503","descricao":"ARRUELA DE ENCOSTOT82565","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":85.55,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27039753","descricao":"ESPAÇADORCQ27286","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":85.73,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27080270","descricao":"ESPAÇADORCQ27210","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":86.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27076622","descricao":"PORCA14M7461","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":86.78,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107950","descricao":"ESPAÇADORCQ27203","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":90.42,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107949","descricao":"ESPAÇADORCQ27199","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":90.52,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016288","descricao":"ARRUELA JOHN DEERE/L112215","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":90.71,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27199481","descricao":"ARRUELA DE ABAL55602","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":90.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107776","descricao":"ESPAÇADORCQ27213","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":91.48,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107990","descricao":"ESPAÇADORCQ27209","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":92.17,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107800","descricao":"ESPAÇADORCQ27225","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":92.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25170190","descricao":"VEDAÇÃO INTERNA DE ÓLEOL41216","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":94.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27039795","descricao":"ESPAÇADORCQ27289","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":96.36,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25189333","descricao":"CONTRAPORCA, M24CQ64111","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":97.4,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107970","descricao":"ESPAÇADORCQ27227","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":98.54,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107797","descricao":"ESPAÇADORCQ27223","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":98.73,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056911","descricao":"ARRUELA DE ENCOSTOCQ29406","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":98.82,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154003","descricao":"CAPA DE ROLAMENTOJD9117","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":101.66,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27014448","descricao":"BUCHA DIVIDIDA CILÍNDRICACQ45134","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":101.82,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25174604","descricao":"CONEXÃO DE LUBRIFICAÇÃO58M7005","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":101.98,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009854","descricao":"ESPAÇADORCQ27195","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":103.58,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27161668","descricao":"ANEL ELÁSTICOCQ27243","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":103.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27086214","descricao":"ARRUELAL112222","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":104.52,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107959","descricao":"ESPAÇADORCQ27218","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":104.62,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27199435","descricao":"ARRUELA DE ABAL40121","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":104.68,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107940","descricao":"ESPAÇADORCQ27198","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":105.02,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27080002","descricao":"ESPAÇADORCQ27204","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":105.78,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107954","descricao":"ESPAÇADORCQ27208","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":106.68,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27086225","descricao":"ESPAÇADORCQ27211","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":107.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27086225","descricao":"ESPAÇADORCQ27212","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":107.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27102133","descricao":"ESPAÇADORCQ27220","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":108.31,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009853","descricao":"ROLAMENTO DE ROLOSAL111096","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":108.68,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107964","descricao":"ESPAÇADORCQ27221","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":108.78,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107995","descricao":"ESPAÇADORCQ27224","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":109.24,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107956","descricao":"ESPAÇADORCQ27226","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":109.44,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25189334","descricao":"ANEL-OL40283","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":114.96,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107952","descricao":"ESPAÇADORCQ27216","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":116.91,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107788","descricao":"ESPAÇADORCQ27217","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":119.28,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27086921","descricao":"ESPAÇADORCQ27215","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":120.86,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107782","descricao":"ESPAÇADORCQ27214","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":124.1,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107978","descricao":"TERMINAL DA BARRA DE DIREÇÃDQ67134","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":124.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25170187","descricao":"PISTÃO DO CILINDRO HIDRÁULICOCQ41717","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":124.77,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25189330","descricao":"CORPO DO CILINDRO HIDRÁULICOL40071","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":127.86,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127204","descricao":"BUCHA SIMPLESL78006","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":134.05,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107960","descricao":"ESPAÇADORCQ27228","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":134.09,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107974","descricao":"ESPAÇADORCQ27230","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":134.09,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045646","descricao":"ARRUELAL40999","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":161.9,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25233057","descricao":"JUMPERCQ64246","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":162.98,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107994","descricao":"VEDAÇÃO/DQ64254","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":163.06,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127212","descricao":"ROLAMENTOJD10249","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":164.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27010250","descricao":"ARRUELAL40075","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":167.02,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25132564","descricao":"ROLAMENTO DE ROLOS CÔNICOSAL79794","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":173.61,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008508","descricao":"ANEL OL40281","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":177.27,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008522","descricao":"ARRUELA DE ABAT116827","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":184.06,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009851","descricao":"ARRUELA DE FURO REDONDOL55610","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":184.44,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25170188","descricao":"GUIAL41163","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":200.66,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127822","descricao":"ESPAÇADORL41172","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":212.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27010214","descricao":"ABA DE VEDAÇÃO DO EIXO GIRATÓRIOAL200971","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":237.22,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27010223","descricao":"ANEL RASPADORL40164","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":240.2,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045658","descricao":"ANEL ELÁSTICOCQ27246","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":265.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195574","descricao":"DISCO DO DIFERENCIAL (COM ESTRIA EXTERNA)L35577","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":285.88,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195570","descricao":"COROA E PINHÃODQ27253","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":286.66,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195569","descricao":"PINO ELÁSTICO34M7135","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":290.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195575","descricao":"DISCO DO DIFERENCIAL (COM ESTRIA EXTERNA)L62420","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":292.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195582","descricao":"CALÇOL101689","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":292.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195565","descricao":"RETENTORCQ27245","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":295.83,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154001","descricao":"BUJÃOL220994","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":301.97,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008550","descricao":"PARAFUSOR223482","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":305.46,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195576","descricao":"DISCO DO DIFERENCIAL (COM ESTRIA INTERNA)L40130","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":310.83,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154004","descricao":"ARRUELAL112212","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":316.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154004","descricao":"EIXO JOHN DEERE/CQ27302","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":316.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195580","descricao":"CALÇOL41004","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":328.09,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195564","descricao":"CHAPACQ29344","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":332.01,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009875","descricao":"PINO FIXADORL114874","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":335.23,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195566","descricao":"ESPAÇADORCQ27277","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":339.79,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195583","descricao":"ESPAÇADOR, ESPESSURA 0,5 MML41001","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":355.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195581","descricao":"CALÇOL41003","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":360.46,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27040946","descricao":"ENGRENAGEM DE CORRENTECQ27234","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":361.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27039789","descricao":"TAMPA DO ROLAMENTOL55594","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":368.9,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195577","descricao":"EIXO DO DIFERENCIALL39983","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":382.87,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195215","descricao":"ESPAÇADORCQ27288","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":384.99,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009858","descricao":"VEDAÇÃOCQ67641","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":404.46,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195573","descricao":"DISCO COM ESTRIADO EXTERNOCQ27730","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":405.66,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016261","descricao":"ESPAÇADORCQ27231","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":417.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107951","descricao":"ESPAÇADORCQ27201","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":428.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195572","descricao":"DISCO COM ESTRIADO INTERNOL40003","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":441.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27037869","descricao":"PEÇA (SEM DESCRIÇÃO NO TEXTO)CQ27244","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":442.78,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195571","descricao":"DIFERENCIALAL38020","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":446.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27089511","descricao":"ANEL-OL40284","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":447.0,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016290","descricao":"ARRUELAL39997","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":468.5,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195567","descricao":"BUCHA DE LIGA CILÍNDRICAL60088","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":490.3,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195568","descricao":"ROLAMENTO DE ROLOS CÔNICOSJD37087","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":494.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27106284","descricao":"VENTILAÇÃO DO ACIONAMENTO DA RODAAL32877","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":505.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27079541","descricao":"ESPAÇADORCQ27197","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":543.94,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107725","descricao":"ESPAÇADORCQ27196","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":548.5,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27099551","descricao":"ARRUELA DE FLANGEL40005","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":559.62,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056867","descricao":"ARRUELAL100592","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":565.86,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25125118","descricao":"ANELL40205","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":592.79,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154002","descricao":"EIXO CARDÃAL207427","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":600.9,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195578","descricao":"PARAFUSO DE CABEÇOTE CILÍNDRICO M12 X 13019M8119","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":607.97,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107793","descricao":"ESPAÇADORCQ27219","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":609.84,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25154000","descricao":"ESPAÇADOR, ESPESSURA DE 0.6 MML41000","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":905.35,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27167311","descricao":"ESPAÇADORCQ27294","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":958.62,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195579","descricao":"ARRUELAL41005","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":977.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27087561","descricao":"PARAFUSO SEXTAVADO, M20 X 14019M7907","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1328.65,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28160051","descricao":"CARCAÇA DO EIXO DIANTEIROCQ64247","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1620.38,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27079951","descricao":"EIXO JOHN DEERE/L39983","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1643.93,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28159937","descricao":"ALOJAMENTO DA CARCAÇA DO EIXO DIANTEIRO CQ64248","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1747.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27010167","descricao":"ANEL ELÁSTICOCQ27308","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1886.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045648","descricao":"PROTEÇÃOL100230","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1928.03,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28160077","descricao":"CARCACA JOHN DEERE/CQ64247","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":1955.63,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127208","descricao":"ARRUELAL112214","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2040.37,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195651","descricao":"ARRUELAL40998","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2116.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27103102","descricao":"CONEXÃOL40235","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2353.4,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27195955","descricao":"ANEL OL53888","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2381.46,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28245486","descricao":"GUIACQ27309","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2912.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28245559","descricao":"FLANGECQ27990","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":2982.21,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127913","descricao":"CAMISA CIL JOHN DEERE/L40071","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":3165.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28160059","descricao":"PARAFUSO SEXTAVADO, M12 X 8519M8122","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":3277.78,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27260426","descricao":"ANELCQ29407","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":11269.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27151358","descricao":"ESPAÇADOR, ESPESSURA DE 0.75 MM/L55608","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":55.82,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107993","descricao":"ANEL ELÁSTICO/CQ27308","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":4.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107988","descricao":"ESPAÇADOR/L41174","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":58.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107970","descricao":"ESPAÇADOR/CQ27227","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":98.54,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27086921","descricao":"ESPAÇADOR/CQ27215","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":120.86,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107952","descricao":"ESPAÇADOR/CQ27216","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":116.91,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107788","descricao":"ESPAÇADOR/CQ27217","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":119.28,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27107959","descricao":"ESPAÇADOR/CQ27218","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":104.62,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27102133","descricao":"ESPAÇADOR/CQ27219","grandeManutencao":"EIXO DIANTEIRO JD 6K","precoLiquido":108.31,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127894","descricao":"FORQUILHA JOHN DEERE/R100461","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":1371.84,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131840","descricao":"TAMPAO JOHN DEERE/15H666","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":16.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25183556","descricao":"CALCO JOHN DEERE/R131675","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":14.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27061361","descricao":"CALCO JOHN DEERE/R131673","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":11.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27061362","descricao":"CALCO JOHN DEERE/R131676","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":30.82,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25128066","descricao":"ANEL O JOHN DEERE/U12037","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":4.82,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27092323","descricao":"CONTRAPINO JOHN DEERE/11H249","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":3.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27044550","descricao":"PARAFUSO JOHN DEERE/R91842","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":11.57,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27178821","descricao":"GRAXEIRO","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":3.52,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27004370","descricao":"ANEL JOHN DEERE/40M7302","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":22.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127242","descricao":"ANEL O JOHN DEERE/A5598R","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":23.92,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27021747","descricao":"ESPACADOR JOHN DEERE/R105412","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":56.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131836","descricao":"DDEFLETOR DE OLEO","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":57.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131415","descricao":"ANEL O JOHN DEERE/R57050","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":62.18,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27003809","descricao":"VEDACAO JOHN DEERE/RE32442","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":93.68,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131419","descricao":"CAPA JOHN DEERE/JD9109","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":139.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131820","descricao":"CAPA JOHN DEERE","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":78.18,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25153181","descricao":"ANEL VED JOHN DEERE/R87047","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":84.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131819","descricao":"CAPA SUP JOHN DEERE/R72090","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":90.34,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25153180","descricao":"ARRUELA ENC JOHN DEERE/R135876","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":48.93,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131420","descricao":"ANEL JOHN DEERE/R83474","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":106.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27003815","descricao":"CONE ROLAM JOHN DEERE/JD9043","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":238.64,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25356949","descricao":"CONE JOHN DEERE/R556561","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":247.7,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27009153","descricao":"ROLAMENTO ","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":131.28,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25182462","descricao":"ROLAMENTO CONIC ARTIC JOHN DEERE","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":159.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131818","descricao":"CAPA DO ROLAMENTO ","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":160.02,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25128571","descricao":"VEDACAO JOHN DEERE/RE65591","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":170.42,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25182463","descricao":"ROLAMENTO CONIC ARTIC JOHN DEERE/AR94761","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":174.31,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131843","descricao":"RETENTOR JOHN DEERE/RE238667","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":95.76,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25356948","descricao":"CONE JOHN DEERE/RE579735","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":385.17,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27063852","descricao":"RETENTOR JOHN DEERE/RE193099","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":227.71,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25131797","descricao":"BUCHA JOHN DEERE/R131405","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":237.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127257","descricao":"CILINDRO CJ HIDR JOHN DEERE/AH157509","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":609.19,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25158206","descricao":"DISCO JOHN DEERE/RE294014","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":77.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27090826","descricao":"VEDACAO JOHN DEERE/RE588241","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":370.94,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25129399","descricao":"VEDACAO JOHN DEERE/RE154869","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":377.63,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27046909","descricao":"REPARO JOHN DEERE/AHC16372","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":874.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27264160","descricao":"COROA JOHN DEERE/R237713","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":472.59,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25158193","descricao":"PINHAO JOHN DEERE/R237709","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":272.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25187446","descricao":"ROLAMENTO ","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":600.98,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127231","descricao":"SOQUETE JOHN DEERE/RE214056","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":1325.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127241","descricao":"SOQUETE JOHN DEERE/RE214055","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":1325.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25137069","descricao":"TERMINAL DIRECAO JOHN DEERE/RE261925","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":1340.64,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25148874","descricao":"TERMINAL DIRECAO JOHN DEERE/RE261926","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":1340.64,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27152763","descricao":"CAPA DE ROLAMRNTO","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":579.47,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27156496","descricao":"ROLAMENTO","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":989.38,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25128076","descricao":"REPARO JOHN DEERE/RE241164","grandeManutencao":"EIXO DIANTEIRO JD 7200","precoLiquido":976.84,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"TORRE USINAGEM","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"ARRUELA DA TORRE","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"POLIA VARIADOR USINAGEM","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"PINO DISCO USINAGEM","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"PONTA BIZMAQ/BZM8028","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"PULMÃO","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"ARRUELA BIZMAQ/BZM5461","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"PULMÃO","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"PINO DO CAIXOTE","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"PINO DISCO DA GRADE","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"FABRICAÇÃO CM","descricao":"ESPAÇADOR DA RODA","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.0,"aquisicao":"FABRICAÇÃO CM","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27079045","descricao":"PORCA 5/16 BZM-2733","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.22,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25090088","descricao":"ABRACADEIRA INSULOCK 300X4,8MM","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.25,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"844101","descricao":"PORCA AUTOTRAV M8 HARVES KOMATSU 963106","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.38999999999999996,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25090175","descricao":"PORCA PARLOCK M12","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.47,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"357072","descricao":"PARAF SEX M8X1,25 35MM DIN267 FFO 8,8 RT","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.5,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"549767","descricao":"PARAFUSO M8X70   ","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.55,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"842400","descricao":"TERMINAL PARTEK/121051","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.65,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25149131","descricao":"TRAVA MAEDA/K5034120","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25124911","descricao":"TRAVA CONECT MAEDA/K5034118","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.87,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"356885","descricao":"PARAFUSO M10X115","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.88,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"8032194","descricao":"TERMINAL FEM MAEDA/K20Y961B790","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":0.88,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078989","descricao":"PORCA SEXT BIZMAQ/BZM5517","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1.1,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"623007","descricao":"PARAF SEX M12X1,75 45MM DIN267 GV 8,8 RT","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1.22,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27182548","descricao":"PARAFUSO5/16 BZM-5322","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27110912","descricao":"PORCA SEXT BIZMAQ/BZM5101","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1.67,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25127933","descricao":"PORCA SEXT JOHN DEERE/14M7274","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1.79,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27044894","descricao":"ENGRAXADEIRA BIZMAQ/BZM-5932","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":2.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111173","descricao":"ARRUELA BIZMAQ/BZM2220","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":2.07,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"612741","descricao":"PARAF SEX M12X1,75 35MM DIN267 FFO 8,8","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":2.46,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27044951","descricao":"CUPILHA BIZMAQ/BZM-4834","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":2.51,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27154603","descricao":"PARAFUSO SEXT BIZMAQ/BZM3560","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":2.86,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27044907","descricao":"ARRUELA LI BIZMAQ/BZM-2220","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":2.86,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27071722","descricao":"CABO PP BIZMAQ/PTD211","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":3.74,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27044925","descricao":"PARAFUSO BIZMAQ/BZM3951","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":3.76,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27110922","descricao":"PARAFUSO BIZMAQ/BZM1426","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":3.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045032","descricao":"PARAFUSO BIZMAQ/BZM-5149","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":3.96,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078974","descricao":"PORCA SEXT BIZMAQ/BZM3953","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":4.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25050855","descricao":"TERMINAL KOMATSU/5034145","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":4.18,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25046343","descricao":"TERMINAL ELETRICO MAEDA/K5034146","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":5.04,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111207","descricao":"PARAFUSO SEXT BIZMAQ/BZM2539","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":5.5,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27070402","descricao":"PORCA MALCAL DA CARRETA ","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":5.69,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"832898","descricao":"ADAPTADOR DO COMANDO AO CILINDRO DA TAMPA= 6-8F5OX-S28271917","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":5.85,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111206","descricao":"PARAFUSO BIZMAQ/BZM8435","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":5.9,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27056013","descricao":"ADAPTADOR MACH AC PARKER/1210F5OXS","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":6.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27041480","descricao":"ADAPTADOR KOMATSU/64306510","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":7.05,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"832898","descricao":"ADAPTADOR RETO LONGO MAEDA/K643445102","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":7.23,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25149130","descricao":"CONECTOR ELETR MAEDA/K5034117","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":8.03,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28271917","descricao":"ADAPTADOR MACHO 9/16 UNF JIC X 3/4 UNF O","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":8.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25149132","descricao":"CONECTOR ELETR MAEDA/K5034119","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":8.83,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25136436","descricao":"NIPLE PROCESS HYTECH HYA12HT","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":8.93,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25239911","descricao":"PORCA 1\" 8FPP","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":10.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111115","descricao":"ARRUELA BIZMAQ/BZM8111","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":10.56,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27101071","descricao":"PORCA SEXT BIZMAQ/BZM5103","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":13.64,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042759","descricao":"ORING DA POLIA BZM-4892","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":14.52,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27082946","descricao":"PORCA SEXT BIZMAQ/BZM5697","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":20.06,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111186","descricao":"ADAPTADOR BIZMAQ/BZM8516","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":23.76,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27016266","descricao":"PORCA SEG JOHN DEERE/L204993","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":24.23,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"79300","descricao":"FITA ISOL ELETR 1000V ADES 3M/SCOTH3320M","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":25.34,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27138149","descricao":"RETENTOR BIZMAQ/BZM3597","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":28.16,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25125214","descricao":"RELE AUTOMOT 12V 4PIN 40A DNI/0110","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":31.15,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111002","descricao":"ESTOJO CJ BIZMAQ/BZM5105","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":31.24,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25077876","descricao":"CABO KOMATSU/5007602","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":34.47,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27197195","descricao":"ACOPLADOR MACH/ENG RAP STUCCHI/800801003","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":47.98,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27008506","descricao":"PARAFUSO JOHN DEERE/19M7921","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":55.23,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27154640","descricao":"CHAVE LIGA/DESLIG BIZMAQ/BZM6491","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":57.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111116","descricao":"BASE BIZMAQ/BZM7484","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":66.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27058028","descricao":"TAMPA BIZMAQ/BZM7820","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":74.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27114563","descricao":"MANGUEIRA BIZMAQ/BZM8949","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":84.12,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25133702","descricao":"MOLA AIVECA EQ AGRIC BIZMAQ BZM-4847","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":114.3,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042985","descricao":"MANGUEIRA HIDR MONT PRENS BIZMAQ/BCAB207","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":119.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27185312","descricao":"ROLAMENTO MENOR  BZM-5474","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":129.6,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27110923","descricao":"MANGUEIRA BIZMAQ/BZM8728","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":129.72,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111020","descricao":"MANGUEIRA HIDR BIZMAQ/BZM6239","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":155.93,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042770","descricao":"MANGUEIRA HIDR MONT PRENS BIZMAQ/BCAB015","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":158.51,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111125","descricao":"FLANGE CONC BIZMAQ/BZM8140","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":162.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111056","descricao":"ARRUELA INTERNA BZM-8139","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":162.8,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042753","descricao":"CORRENTE SEG BIZMAQ/BZM-4532","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":169.21,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27110958","descricao":"MANGUEIRA BIZMAQ/BZM8724","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":223.69,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042762","descricao":"SENSOR ELETR BIZMAQ/BZM4171","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":277.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042762","descricao":"SENSOR BIZMAQ/BZM-4171","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":277.2,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111024","descricao":"CONE ROLAM ROLO CON BIZMAQ/BZM5047","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":286.08,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27043035","descricao":"DISCO BIZMAQ/BZM-4594","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":332.96,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25119540","descricao":"DISCO LISO GRADE BIZMAQ/BZM-4172","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":333.09,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27085942","descricao":"LAMINA METISA/5B5564","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":545.24,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27043089","descricao":"BUCHA CT BIZMAQ/BZM-6513","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":660.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111068","descricao":"CUBO DA RODA","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":660.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042858","descricao":"BUCHA DESG BIZMAQ/BZM-6512","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":686.4,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"50075803","descricao":"CIL ENXADINHA SF29","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":739.48,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27045014","descricao":"MANCAL BIZMAQ/BG018","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":851.86,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28160039","descricao":"CILINDRO DO AFASTADOR  BIZMAQ/BZM-5287","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1174.66,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"50075464","descricao":"CIL FACA SF03","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1223.54,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27111070","descricao":"MOTOR BIZMAQ/BZM4760","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1598.4,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27000801","descricao":"DOSADOR ADUBADEIRA EMAC/FX001/14","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1650.72,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27114565","descricao":"COMANDO BIZMAQ/BZM8899","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1728.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27085941","descricao":"DISCO METISA/30551","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1816.15,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27042981","descricao":"SOLENÓIDE INDIVIDUAL BZM-8694","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":1888.92,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27206056","descricao":"HASTE BIZMAQ/BZM6623","grandeManutencao":"MULTIUSO BIZMAQ","precoLiquido":4356.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"882305","descricao":"ELETRODO CARBOGRAFITE/0120124121/4POL","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":1.48,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27054067","descricao":"ANEL O CNH/5146468","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":2.91,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25201287","descricao":"DISCO DESB NORTON/BDA54100X5X15,87MM","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":7.88,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"964867","descricao":"DISCO CORT 178X1,60X22MM WALTER/11T172","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":9.09,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078972","descricao":"PORCA SEXT BIZMAQ/BZM6637","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":12.61,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27082946","descricao":"PORCA SEXT BIZMAQ/BZM5697","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":13.24,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25250242","descricao":"DISCO DESB 180X22MM NORTON/66254450146","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":13.38,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27037752","descricao":"ARAME SOLD AC CARB COBR 1,20MM AWS A5 18","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":14.85,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"25187772","descricao":"ANTIRRESPINGO P/SOLD C/SILIC 010088710","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":25.46,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078978","descricao":"ELEMENTO BIZMAQ/BZM6640","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":28.7,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078976","descricao":"ACOPLAMENTO BIZMAQ/BZM6639","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":168.51,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078976","descricao":"ACOPLAMENTO BIZMAQ/BZM6639","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":168.51,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055510","descricao":"PINO BIZMAQ/ROF027","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":174.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055511","descricao":"FACAO BIZMAQ/BZM-5382","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":185.23,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27078987","descricao":"ACOPLAMENTO BIZMAQ/BZM6638","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":246.71,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055509","descricao":"MANGUEIRA BIZMAQ/BZM-4453","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":280.0,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055519","descricao":"MANGUEIRA BIZMAQ/BZM-4907","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":358.93,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055519","descricao":"MANGUEIRA BIZMAQ/BZM-4907","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":358.93,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055544","descricao":"SUPORTE BIZMAQ/ROF023","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":1613.69,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"27055512","descricao":"MOTOR BIZMAQ/BZM-5994","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":1622.18,"aquisicao":"ESTOQUE","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28161147","descricao":"CAIXA BIZMAQ/BZM5665","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":2331.02,"aquisicao":"COMPRA","quantidadePlanejada":1},{"operacao":"SILVICULTURA","ni":"28161148","descricao":"CILINDRO BIZMAQ/BZM5286","grandeManutencao":"ROÇADEIRA BIZMAQ","precoLiquido":2922.73,"aquisicao":"COMPRA","quantidadePlanejada":1}];
+
+// ======================== ESTADO ========================
+let estado = {
+  gmAtiva: null,
+  selecionados: {},   // ni -> quantidade
+  extras: [],         // [{id, codigo, qtd, desc, obs, gm}]
+  tema: 'light'
+};
+
+// ======================== LOCAL STORAGE ========================
+function salvarEstado() {
+  localStorage.setItem('cestaGM_silv', JSON.stringify(estado));
+}
+function carregarEstado() {
+  const s = localStorage.getItem('cestaGM_silv');
+  if (s) {
+    try { Object.assign(estado, JSON.parse(s)); } catch(e) {}
+  }
+}
+
+// ======================== TEMA ========================
+function toggleTheme() {
+  estado.tema = estado.tema === 'light' ? 'dark' : 'light';
+  aplicarTema();
+  salvarEstado();
+}
+function aplicarTema() {
+  document.body.classList.toggle('dark', estado.tema === 'dark');
+  document.getElementById('btnTheme').textContent = estado.tema === 'dark' ? '☀️' : '🌙';
+}
+
+// ======================== HELPERS ========================
+const fmtBRL = v => 'R$ ' + (v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtNum = v => (v||0).toLocaleString('pt-BR');
+
+function getGMs() {
+  const map = {};
+  materiaisBase.forEach(m => {
+    if (!map[m.grandeManutencao]) map[m.grandeManutencao] = [];
+    map[m.grandeManutencao].push(m);
+  });
+  return map;
+}
+
+function getImagemGM(nome) {
+  const n = (nome||'').toUpperCase();
+  if (n.includes('6100')) return {icon:'🚜', grad:'linear-gradient(135deg,#1a5c35,#2d8c4a)', label:'John Deere 6100'};
+  if (n.includes('6115')) return {icon:'🚜', grad:'linear-gradient(135deg,#1e6b3a,#3a9c5a)', label:'John Deere 6115'};
+  if (n.includes('6135')) return {icon:'🚜', grad:'linear-gradient(135deg,#1a5c35,#2d8c4a)', label:'John Deere 6135'};
+  if (n.includes('7200')) return {icon:'🚛', grad:'linear-gradient(135deg,#14532d,#166534)', label:'John Deere 7200'};
+  if (n.includes('6K') || n.includes('JD')) return {icon:'⚙️', grad:'linear-gradient(135deg,#1e3a2f,#2d6a4f)', label:'John Deere'};
+  if (n.includes('ROÇADEIRA')) return {icon:'🌾', grad:'linear-gradient(135deg,#4a5c1a,#6b8c2d)', label:'Roçadeira Bizmaq'};
+  if (n.includes('MULTIUSO') || n.includes('BIZMAQ')) return {icon:'🔧', grad:'linear-gradient(135deg,#5c4a1a,#8c6b2d)', label:'Implemento Bizmaq'};
+  if (n.includes('CAIXA')) return {icon:'🔩', grad:'linear-gradient(135deg,#2d3a4a,#4a5c6b)', label:'Caixa de Tração'};
+  if (n.includes('EIXO')) return {icon:'⚙️', grad:'linear-gradient(135deg,#3a2d1a,#6b4a2d)', label:'Eixo'};
+  return {icon:'🔧', grad:'linear-gradient(135deg,#1a4731,#2d7a4f)', label:'Equipamento'};
+}
+
+function getTagsGM(nome) {
+  const n = (nome||'').toUpperCase();
+  const tags = ['GM'];
+  if (n.includes('JD') || n.includes('JOHN DEERE') || n.includes('6K') || n.includes('7200') || n.includes('6100') || n.includes('6115') || n.includes('6135')) tags.push('John Deere');
+  if (n.includes('BIZMAQ')) tags.push('Bizmaq');
+  if (n.includes('ROÇADEIRA')) tags.push('Roçadeira');
+  if (n.includes('MULTIUSO')) tags.push('Implemento');
+  if (n.includes('CAIXA')) tags.push('Caixa de Tração');
+  if (n.includes('EIXO')) tags.push('Eixo');
+  tags.push('Silvicultura');
+  return tags.slice(0,3);
+}
+
+// ======================== TELA HOME ========================
+function renderHome() {
+  mostrarScreen('home');
+  document.getElementById('btnBack').classList.remove('visible');
+  renderIndicators();
+  renderGMGrid(document.getElementById('searchHome').value);
+}
+
+function renderIndicators() {
+  const gms = getGMs();
+  const totalGMs = Object.keys(gms).length;
+  const totalMat = materiaisBase.length;
+  const totalVal = materiaisBase.reduce((s,m)=>s+m.precoLiquido,0);
+  const totalPlan = materiaisBase.reduce((s,m)=>s+m.quantidadePlanejada,0);
+  document.getElementById('indicators').innerHTML = `
+    <div class="ind-card"><div class="ind-icon">🔧</div><div class="ind-value">${totalGMs}</div><div class="ind-label">Grandes Manutenções</div></div>
+    <div class="ind-card"><div class="ind-icon">📦</div><div class="ind-value">${fmtNum(totalMat)}</div><div class="ind-label">Materiais Cadastrados</div></div>
+    <div class="ind-card"><div class="ind-icon">💰</div><div class="ind-value">${fmtBRL(totalVal)}</div><div class="ind-label">Valor Total Estimado</div></div>
+    <div class="ind-card"><div class="ind-icon">📋</div><div class="ind-value">${fmtNum(totalPlan)}</div><div class="ind-label">Itens Planejados</div></div>
+  `;
+}
+
+function filtrarGMs() {
+  renderGMGrid(document.getElementById('searchHome').value);
+}
+
+function renderGMGrid(busca='') {
+  const gms = getGMs();
+  const grid = document.getElementById('gmGrid');
+  const b = busca.trim().toLowerCase();
+  let html = '';
+  let count = 0;
+  Object.entries(gms).forEach(([nome, itens]) => {
+    if (b && !nome.toLowerCase().includes(b)) return;
+    count++;
+    const img = getImagemGM(nome);
+    const tags = getTagsGM(nome);
+    const totalVal = itens.reduce((s,m)=>s+m.precoLiquido,0);
+    const totalPlan = itens.reduce((s,m)=>s+m.quantidadePlanejada,0);
+    const tagHtml = tags.map(t => `<span class="tag ${t==='John Deere'?'tag-green':t==='Bizmaq'||t==='Implemento'||t==='Roçadeira'?'tag-yellow':'tag-gray'}">${t}</span>`).join('');
+    html += `
+      <div class="gm-card" onclick="abrirCesta('${nome.replace(/'/g,"\'")}')">
+        <div class="gm-card-img" style="background:${img.grad}">
+          <span style="font-size:60px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3))">${img.icon}</span>
+        </div>
+        <div class="gm-card-body">
+          <div class="gm-card-op">🌿 SILVICULTURA</div>
+          <div class="gm-card-title">${nome}</div>
+          <div class="gm-tags">${tagHtml}</div>
+          <div class="gm-stats">
+            <div class="gm-stat"><div class="gm-stat-val">${itens.length}</div><div class="gm-stat-lbl">Materiais</div></div>
+            <div class="gm-stat"><div class="gm-stat-val">${totalPlan}</div><div class="gm-stat-lbl">Planejados</div></div>
+            <div class="gm-stat"><div class="gm-stat-val" style="font-size:12px">${fmtBRL(totalVal)}</div><div class="gm-stat-lbl">Estimado</div></div>
+          </div>
+          <button class="btn-open-cesta">📂 Abrir Cesta</button>
+        </div>
+      </div>`;
+  });
+  if (!count) html = `<div class="no-results" style="grid-column:1/-1">🔍 Nenhuma Grande Manutenção encontrada.</div>`;
+  grid.innerHTML = html;
+}
+
+// ======================== TELA CESTA ========================
+function abrirCesta(gm) {
+  estado.gmAtiva = gm;
+  salvarEstado();
+  mostrarScreen('cesta');
+  document.getElementById('btnBack').classList.add('visible');
+  renderCestaBanner();
+  filtrarMateriais();
+  atualizarFloatingCart();
+}
+
+function renderCestaBanner() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  const img = getImagemGM(gm);
+  const totalVal = itens.reduce((s,m)=>s+m.precoLiquido,0);
+  const totalPlan = itens.reduce((s,m)=>s+m.quantidadePlanejada,0);
+  const banner = document.getElementById('cestaBanner');
+  banner.style.background = img.grad;
+  document.getElementById('cestaBannerIcon').textContent = img.icon;
+  document.getElementById('cestaGMTitle').textContent = gm;
+  document.getElementById('cestaGMSub').textContent = img.label;
+  document.getElementById('cestaStats').innerHTML = `
+    <div class="cesta-stat"><div class="cesta-stat-val">${itens.length}</div><div class="cesta-stat-lbl">Materiais</div></div>
+    <div class="cesta-stat"><div class="cesta-stat-val">${totalPlan}</div><div class="cesta-stat-lbl">Planejados</div></div>
+    <div class="cesta-stat"><div class="cesta-stat-val">${fmtBRL(totalVal)}</div><div class="cesta-stat-lbl">Valor Est.</div></div>
+  `;
+}
+
+function filtrarMateriais() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  const busca = document.getElementById('searchCesta').value.trim().toLowerCase();
+  const aqFiltro = document.getElementById('filterAquisicao').value;
+  const sort = document.getElementById('sortMat').value;
+
+  let filtrados = itens.filter(m => {
+    const matchBusca = !busca || m.ni.toLowerCase().includes(busca) || m.descricao.toLowerCase().includes(busca);
+    const matchAq = !aqFiltro || m.aquisicao === aqFiltro;
+    return matchBusca && matchAq;
+  });
+
+  filtrados.sort((a,b) => {
+    if (sort==='ni') return a.ni.localeCompare(b.ni);
+    if (sort==='preco') return a.precoLiquido - b.precoLiquido;
+    if (sort==='precoD') return b.precoLiquido - a.precoLiquido;
+    return a.descricao.localeCompare(b.descricao);
+  });
+
+  renderMaterialList(filtrados);
+  atualizarSelectedLabel(filtrados);
+}
+
+function renderMaterialList(itens) {
+  const list = document.getElementById('materialList');
+  if (!itens.length) {
+    list.innerHTML = `<div class="no-results">🔍 Nenhum material encontrado.</div>`;
+    return;
+  }
+  list.innerHTML = itens.map(m => {
+    const sel = estado.selecionados.hasOwnProperty(m.ni);
+    const qty = sel ? estado.selecionados[m.ni] : m.quantidadePlanejada;
+    const total = qty * m.precoLiquido;
+    const isOver = qty > m.quantidadePlanejada;
+    const tagAq = m.aquisicao === 'COMPRA' ? 'tag-green' : m.aquisicao === 'ESTOQUE' ? 'tag-yellow' : 'tag-gray';
+    return `
+      <div class="mat-item ${sel?'selected':''}" id="matItem_${m.ni}">
+        <div class="mat-row1">
+          <div class="mat-check ${sel?'checked':''}" onclick="toggleSelecionado('${m.ni}',${m.quantidadePlanejada})" title="${sel?'Desmarcar':'Selecionar'}">
+            ${sel?'✓':''}
+          </div>
+          <div class="mat-info">
+            <div class="mat-ni">${m.ni}</div>
+            <div class="mat-desc">${m.descricao}</div>
+            <div class="mat-tags">
+              <span class="tag ${tagAq}">${m.aquisicao}</span>
+              ${isOver?'<span class="planned-badge planned-over">⚠️ Acima do planejado</span>':'<span class="planned-badge planned-ok">Planejado: '+m.quantidadePlanejada+'</span>'}
+            </div>
+          </div>
+          <div style="flex-shrink:0;text-align:right">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">Unit.</div>
+            <div style="font-size:13px;font-weight:700;color:var(--verde-medio)">${fmtBRL(m.precoLiquido)}</div>
+          </div>
+        </div>
+        <div class="mat-row2">
+          <div class="mat-qty-ctrl">
+            <button class="qty-btn" onclick="mudaQty('${m.ni}',${m.quantidadePlanejada},-1)">−</button>
+            <input class="qty-input" type="number" min="0" value="${qty}" onchange="setQty('${m.ni}',${m.quantidadePlanejada},this.value)" oninput="setQty('${m.ni}',${m.quantidadePlanejada},this.value)" id="qtyInp_${m.ni}">
+            <button class="qty-btn" onclick="mudaQty('${m.ni}',${m.quantidadePlanejada},1)">+</button>
+          </div>
+          <div class="mat-total">${total>0?fmtBRL(total):'—'}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleSelecionado(ni, planQty) {
+  if (estado.selecionados.hasOwnProperty(ni)) {
+    delete estado.selecionados[ni];
+  } else {
+    estado.selecionados[ni] = planQty;
+    const inp = document.getElementById('qtyInp_'+ni);
+    if (inp) estado.selecionados[ni] = Math.max(0, parseInt(inp.value)||0) || planQty;
+  }
+  salvarEstado();
+  filtrarMateriais();
+  atualizarFloatingCart();
+}
+
+function mudaQty(ni, planQty, delta) {
+  const inp = document.getElementById('qtyInp_'+ni);
+  let v = (parseInt(inp?.value)||0) + delta;
+  if (v < 0) v = 0;
+  if (inp) inp.value = v;
+  if (estado.selecionados.hasOwnProperty(ni)) {
+    estado.selecionados[ni] = v;
+    salvarEstado();
+  }
+  atualizarItemVisual(ni, planQty, v);
+  atualizarFloatingCart();
+}
+
+function setQty(ni, planQty, val) {
+  let v = parseInt(val);
+  if (isNaN(v) || v < 0) v = 0;
+  if (estado.selecionados.hasOwnProperty(ni)) {
+    estado.selecionados[ni] = v;
+    salvarEstado();
+  }
+  atualizarItemVisual(ni, planQty, v);
+  atualizarFloatingCart();
+}
+
+function atualizarItemVisual(ni, planQty, qty) {
+  const m = materiaisBase.find(x=>x.ni===ni);
+  if (!m) return;
+  const total = qty * m.precoLiquido;
+  const isOver = qty > planQty;
+  const sel = estado.selecionados.hasOwnProperty(ni);
+  const item = document.getElementById('matItem_'+ni);
+  if (!item) return;
+  const badgeEl = item.querySelector('.planned-badge');
+  if (badgeEl) badgeEl.outerHTML = isOver
+    ? '<span class="planned-badge planned-over">⚠️ Acima do planejado</span>'
+    : `<span class="planned-badge planned-ok">Planejado: ${planQty}</span>`;
+  const totalEl = item.querySelector('.mat-total');
+  if (totalEl) totalEl.textContent = total>0?fmtBRL(total):'—';
+}
+
+function selecionarTodos() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  const busca = document.getElementById('searchCesta').value.trim().toLowerCase();
+  const aqFiltro = document.getElementById('filterAquisicao').value;
+  itens.filter(m=>{
+    const mb = !busca || m.ni.toLowerCase().includes(busca)||m.descricao.toLowerCase().includes(busca);
+    const ma = !aqFiltro||m.aquisicao===aqFiltro;
+    return mb&&ma;
+  }).forEach(m=>{
+    if (!estado.selecionados.hasOwnProperty(m.ni)) estado.selecionados[m.ni] = m.quantidadePlanejada;
+  });
+  salvarEstado();
+  filtrarMateriais();
+  atualizarFloatingCart();
+  showToast('Todos selecionados!','success');
+}
+
+function desmarcarTodos() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  itens.forEach(m=>delete estado.selecionados[m.ni]);
+  salvarEstado();
+  filtrarMateriais();
+  atualizarFloatingCart();
+}
+
+function atualizarSelectedLabel(itens) {
+  const sel = itens.filter(m=>estado.selecionados.hasOwnProperty(m.ni));
+  document.getElementById('selectedCountLabel').textContent = `${sel.length} de ${itens.length} selecionados`;
+}
+
+function atualizarFloatingCart() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  const selMats = itens.filter(m=>estado.selecionados.hasOwnProperty(m.ni));
+  const totalItens = selMats.reduce((s,m)=>{
+    const inp = document.getElementById('qtyInp_'+m.ni);
+    return s+(inp?parseInt(inp.value)||0:estado.selecionados[m.ni]||0);
+  },0);
+  const totalVal = selMats.reduce((s,m)=>{
+    const inp = document.getElementById('qtyInp_'+m.ni);
+    const q = inp?parseInt(inp.value)||0:estado.selecionados[m.ni]||0;
+    return s+q*m.precoLiquido;
+  },0);
+  const totalExtras = estado.extras.filter(e=>e.gm===gm).length;
+  const totalCount = selMats.length + totalExtras;
+
+  document.getElementById('floatingCart').classList.toggle('hidden', totalCount===0);
+  document.getElementById('fcStats').textContent = `${totalCount} materiais | ${totalItens} itens | ${fmtBRL(totalVal)}`;
+  document.getElementById('cartHeaderCount').textContent = totalCount;
+}
+
+// ======================== CARRINHO ========================
+function irParaCarrinho() {
+  // Sync quantities from inputs
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  itens.forEach(m=>{
+    if (estado.selecionados.hasOwnProperty(m.ni)) {
+      const inp = document.getElementById('qtyInp_'+m.ni);
+      if (inp) estado.selecionados[m.ni] = parseInt(inp.value)||0;
+    }
+  });
+  salvarEstado();
+  mostrarScreen('carrinho');
+  document.getElementById('btnBack').classList.add('visible');
+  renderCarrinho();
+}
+
+function voltarCesta() {
+  mostrarScreen('cesta');
+  filtrarMateriais();
+  atualizarFloatingCart();
+}
+
+function voltarHome() {
+  const screen = document.querySelector('.screen.active');
+  if (screen && screen.id === 'screen-carrinho') { voltarCesta(); return; }
+  mostrarScreen('home');
+  document.getElementById('btnBack').classList.remove('visible');
+  estado.gmAtiva = null;
+  salvarEstado();
+}
+
+function renderCarrinho() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  const selMats = itens.filter(m=>estado.selecionados.hasOwnProperty(m.ni));
+  const extras = estado.extras.filter(e=>e.gm===gm);
+  const img = getImagemGM(gm);
+
+  document.getElementById('cartGMLabel').innerHTML = `<span style="color:var(--verde-medio);font-weight:600">🌿 ${gm}</span>`;
+
+  const totalItens = selMats.reduce((s,m)=>s+(estado.selecionados[m.ni]||0),0);
+  const totalVal = selMats.reduce((s,m)=>s+(estado.selecionados[m.ni]||0)*m.precoLiquido,0);
+  const totalMats = selMats.length + extras.length;
+
+  document.getElementById('cartSummaryCards').innerHTML = `
+    <div class="cart-sum-card"><div class="cart-sum-val">${totalMats}</div><div class="cart-sum-lbl">Materiais</div></div>
+    <div class="cart-sum-card"><div class="cart-sum-val">${totalItens}</div><div class="cart-sum-lbl">Itens totais</div></div>
+    <div class="cart-sum-card"><div class="cart-sum-val">${fmtBRL(totalVal)}</div><div class="cart-sum-lbl">Valor Estimado</div></div>
+    <div class="cart-sum-card"><div class="cart-sum-val">${extras.length}</div><div class="cart-sum-lbl">Extras</div></div>
+  `;
+
+  const list = document.getElementById('cartItemsList');
+  if (!totalMats) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-title">Carrinho vazio</div><div class="empty-desc">Volte e selecione materiais.</div></div>`;
+    return;
+  }
+
+  let html = '';
+  selMats.forEach(m=>{
+    const qty = estado.selecionados[m.ni]||0;
+    const total = qty*m.precoLiquido;
+    const tagCls = m.aquisicao==='COMPRA'?'tag-green':m.aquisicao==='ESTOQUE'?'tag-yellow':'tag-gray';
+    html += `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <div class="cart-item-ni">${m.ni}</div>
+          <div class="cart-item-desc">${m.descricao}</div>
+          <div class="cart-item-meta">
+            <span class="tag ${tagCls}">${m.aquisicao}</span>
+            <span style="font-size:11px;color:var(--text-muted)">Plan: ${m.quantidadePlanejada}</span>
+            <span style="font-size:11px;color:var(--text-muted)">Unitário: ${fmtBRL(m.precoLiquido)}</span>
+          </div>
+        </div>
+        <div class="cart-item-right">
+          <div class="cart-item-total">${fmtBRL(total)}</div>
+          <div class="mat-qty-ctrl">
+            <button class="qty-btn" onclick="cartMudaQty('${m.ni}',-1)">−</button>
+            <input class="qty-input" type="number" min="0" value="${qty}" onchange="cartSetQty('${m.ni}',this.value)" style="width:44px">
+            <button class="qty-btn" onclick="cartMudaQty('${m.ni}',1)">+</button>
+          </div>
+          <button class="btn-del" onclick="removerDoCarrinho('${m.ni}')" title="Remover">✕</button>
+        </div>
+      </div>`;
+  });
+
+  extras.forEach(e=>{
+    html += `
+      <div class="cart-item extra">
+        <div class="cart-item-info">
+          <div class="cart-item-ni">Extra: ${e.codigo}</div>
+          <div class="cart-item-desc">${e.desc||'(sem descrição)'}</div>
+          <div class="cart-item-meta">
+            <span class="mat-extra-badge">MATERIAL EXTRA</span>
+            ${e.obs?`<span style="font-size:11px;color:var(--text-muted)">Obs: ${e.obs}</span>`:''}
+          </div>
+        </div>
+        <div class="cart-item-right">
+          <div class="cart-item-total">Qtd: ${e.qtd}</div>
+          <button class="btn-del" onclick="removerExtra('${e.id}')" title="Remover">✕</button>
+        </div>
+      </div>`;
+  });
+
+  list.innerHTML = html;
+}
+
+function cartMudaQty(ni, delta) {
+  let v = (estado.selecionados[ni]||0)+delta;
+  if (v < 0) v = 0;
+  estado.selecionados[ni] = v;
+  salvarEstado();
+  renderCarrinho();
+}
+
+function cartSetQty(ni, val) {
+  let v = parseInt(val);
+  if (isNaN(v)||v<0) v = 0;
+  estado.selecionados[ni] = v;
+  salvarEstado();
+  renderCarrinho();
+}
+
+function removerDoCarrinho(ni) {
+  delete estado.selecionados[ni];
+  salvarEstado();
+  renderCarrinho();
+  showToast('Material removido.','warning');
+}
+
+function removerExtra(id) {
+  estado.extras = estado.extras.filter(e=>e.id!==id);
+  salvarEstado();
+  renderCarrinho();
+  showToast('Extra removido.','warning');
+}
+
+function limparCarrinho() {
+  if (!confirm('Deseja realmente limpar o carrinho?')) return;
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  itens.forEach(m=>delete estado.selecionados[m.ni]);
+  estado.extras = estado.extras.filter(e=>e.gm!==gm);
+  salvarEstado();
+  renderCarrinho();
+  showToast('Carrinho limpo!','warning');
+}
+
+// ======================== MATERIAL EXTRA ========================
+function abrirModalExtra() {
+  document.getElementById('extraCodigo').value='';
+  document.getElementById('extraQtd').value='';
+  document.getElementById('extraDesc').value='';
+  document.getElementById('extraObs').value='';
+  document.getElementById('erroExtraCodigo').style.display='none';
+  document.getElementById('erroExtraQtd').style.display='none';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function fecharModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function adicionarExtra() {
+  const codigo = document.getElementById('extraCodigo').value.trim();
+  const qtd = parseInt(document.getElementById('extraQtd').value);
+  const desc = document.getElementById('extraDesc').value.trim();
+  const obs = document.getElementById('extraObs').value.trim();
+  let valid = true;
+  document.getElementById('erroExtraCodigo').style.display = codigo?'none':'block'; if(!codigo) valid=false;
+  document.getElementById('erroExtraQtd').style.display = (qtd>=1)?'none':'block'; if(!(qtd>=1)) valid=false;
+  if (!valid) return;
+  estado.extras.push({id:'e'+Date.now(), codigo, qtd, desc, obs, gm: estado.gmAtiva});
+  salvarEstado();
+  fecharModal();
+  renderCarrinho();
+  showToast('Material extra adicionado!','success');
+}
+
+// ======================== EXPORT EXCEL ========================
+function exportarExcel() {
+  const gm = estado.gmAtiva;
+  const itens = getGMs()[gm] || [];
+  const selMats = itens.filter(m=>estado.selecionados.hasOwnProperty(m.ni));
+  const extras = estado.extras.filter(e=>e.gm===gm);
+  if (!selMats.length && !extras.length) {
+    showToast('Carrinho vazio! Selecione materiais.','error');
+    return;
+  }
+  const rows = [];
+  selMats.forEach(m=>{
+    const qty = estado.selecionados[m.ni]||0;
+    rows.push({
+      'OPERAÇÃO': m.operacao,
+      'NI': m.ni,
+      'DESCRIÇÃO': m.descricao,
+      'GRANDE MANUTENÇÃO': m.grandeManutencao,
+      'PREÇO LÍQUIDO': m.precoLiquido,
+      'AQUISIÇÃO': m.aquisicao,
+      'QUANTIDADE PLANEJADA': m.quantidadePlanejada,
+      'QUANTIDADE SOLICITADA': qty,
+      'VALOR TOTAL': qty*m.precoLiquido,
+      'CÓDIGO MATERIAL EXTRA': '',
+      'MATERIAL EXTRA': 'NÃO',
+      'OBSERVAÇÃO': ''
+    });
+  });
+  extras.forEach(e=>{
+    rows.push({
+      'OPERAÇÃO': 'SILVICULTURA',
+      'NI': '',
+      'DESCRIÇÃO': e.desc||'',
+      'GRANDE MANUTENÇÃO': e.gm,
+      'PREÇO LÍQUIDO': 0,
+      'AQUISIÇÃO': '',
+      'QUANTIDADE PLANEJADA': 0,
+      'QUANTIDADE SOLICITADA': e.qtd,
+      'VALOR TOTAL': 0,
+      'CÓDIGO MATERIAL EXTRA': e.codigo,
+      'MATERIAL EXTRA': 'SIM',
+      'OBSERVAÇÃO': e.obs||''
+    });
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Solicitação');
+  const date = new Date().toISOString().slice(0,10);
+  const filename = `Cesta_GM_Silvicultura_${gm.replace(/[^a-zA-Z0-9]/g,'_')}_${date}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  showToast('Planilha exportada com sucesso!','success');
+}
+
+// ======================== TOAST ========================
+function showToast(msg, type='success') {
+  const icons = {success:'✅', error:'❌', warning:'⚠️'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// ======================== SCREEN NAV ========================
+function mostrarScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ======================== INIT ========================
+document.addEventListener('DOMContentLoaded', () => {
+  carregarEstado();
+  aplicarTema();
+
+  // Close modal on overlay click
+  document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target===this) fecharModal();
+  });
+
+  // Restore state
+  if (estado.gmAtiva) {
+    abrirCesta(estado.gmAtiva);
+  } else {
+    renderHome();
+  }
+});
+
+
+// ======================== IMPORT SYSTEM ========================
+let importDados = [];         // parsed from file
+let importMode = 'replace';   // replace | merge | add
+let htmlOriginalSrc = '';     // will be set on load
+
+function abrirImport() {
+  resetImportSteps();
+  document.getElementById('importOverlay').classList.add('open');
+}
+
+function fecharImport() {
+  document.getElementById('importOverlay').classList.remove('open');
+  resetImportSteps();
+}
+
+function resetImportSteps() {
+  ['importStep1','importStep2','importStep3','importStep4'].forEach(id=>{
+    document.getElementById(id).classList.remove('active');
+  });
+  document.getElementById('importStep1').classList.add('active');
+  document.getElementById('importNextBtn').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  importDados = [];
+}
+
+function irParaStep(n) {
+  ['importStep1','importStep2','importStep3','importStep4'].forEach((id,i)=>{
+    document.getElementById(id).classList.toggle('active', i===n-1);
+  });
+}
+
+// Drag & drop
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropzone').classList.add('drag-over'); }
+function onDragLeave(e) { document.getElementById('dropzone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processarArquivo(file);
+}
+function onFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processarArquivo(file);
+}
+
+function processarArquivo(file) {
+  irParaStep(2);
+  document.getElementById('importNextBtn').style.display = 'none';
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      document.getElementById('loadingMsg').textContent = 'Processando dados...';
+      const data = new Uint8Array(e.target.result);
+
+      let wb;
+      if (ext === 'xlsb') {
+        wb = XLSX.read(data, {type:'array', bookType:'xlsb'});
+      } else {
+        wb = XLSX.read(data, {type:'array'});
+      }
+
+      // Try to find sheet with the right columns - check 'CESTAS' first, then all sheets
+      let dadosImportados = [];
+      const sheetsToTry = wb.SheetNames.includes('CESTAS')
+        ? ['CESTAS', ...wb.SheetNames.filter(s=>s!=='CESTAS')]
+        : wb.SheetNames;
+
+      for (const sheetName of sheetsToTry) {
+        const ws = wb.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+        if (!rows.length) continue;
+
+        // Normalize column names (trim spaces)
+        const normalizedRows = rows.map(r => {
+          const norm = {};
+          Object.keys(r).forEach(k => { norm[k.trim()] = r[k]; });
+          return norm;
+        });
+
+        // Check required columns
+        const first = normalizedRows[0];
+        const keys = Object.keys(first);
+        const hasOp = keys.some(k=>k.includes('OPERA'));
+        const hasNI = keys.some(k=>k==='NI');
+        const hasDesc = keys.some(k=>k.includes('DESCRI'));
+        const hasGM = keys.some(k=>k.includes('GRANDE'));
+        const hasPreco = keys.some(k=>k.includes('PRE'));
+
+        if (hasOp && hasNI && hasDesc && hasGM && hasPreco) {
+          // Map column names flexibly
+          const colOp = keys.find(k=>k.includes('OPERA'))||'OPERAÇÃO';
+          const colNI = keys.find(k=>k==='NI')||'NI';
+          const colDesc = keys.find(k=>k.includes('DESCRI'))||'DESCRIÇÃO';
+          const colGM = keys.find(k=>k.includes('GRANDE'))||'GRANDE MANUTENÇÃO';
+          const colPreco = keys.find(k=>k.includes('PRE'))||'PREÇO LÍQUIDO';
+          const colAq = keys.find(k=>k.includes('AQUISI'))||'AQUISIÇÃO';
+
+          dadosImportados = normalizedRows
+            .filter(r => String(r[colOp]).trim().toUpperCase() === 'SILVICULTURA')
+            .map(r => ({
+              operacao: 'SILVICULTURA',
+              ni: String(r[colNI]).trim(),
+              descricao: String(r[colDesc]).trim(),
+              grandeManutencao: String(r[colGM]).trim(),
+              precoLiquido: parseFloat(String(r[colPreco]).replace(',','.')) || 0,
+              aquisicao: String(r[colAq]).trim() || 'COMPRA',
+              quantidadePlanejada: 1
+            }))
+            .filter(r => r.ni && r.grandeManutencao);
+
+          if (dadosImportados.length > 0) break;
+        }
+      }
+
+      if (!dadosImportados.length) {
+        irParaStep(1);
+        showToast('Nenhum dado de SILVICULTURA encontrado no arquivo.', 'error');
+        return;
+      }
+
+      importDados = dadosImportados;
+      mostrarPreview();
+    } catch(err) {
+      console.error(err);
+      irParaStep(1);
+      showToast('Erro ao ler o arquivo. Verifique o formato.', 'error');
+    }
+  };
+
+  reader.onerror = () => {
+    irParaStep(1);
+    showToast('Erro ao ler o arquivo.', 'error');
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function mostrarPreview() {
+  irParaStep(3);
+  document.getElementById('importNextBtn').style.display = 'flex';
+
+  // Summary
+  const gmsNovas = {};
+  importDados.forEach(m => {
+    if (!gmsNovas[m.grandeManutencao]) gmsNovas[m.grandeManutencao] = {count:0, total:0};
+    gmsNovas[m.grandeManutencao].count++;
+    gmsNovas[m.grandeManutencao].total += m.precoLiquido;
+  });
+
+  const gmsAtuais = getGMs();
+  const nomeAtual = Object.keys(gmsAtuais);
+  const nomeNova = Object.keys(gmsNovas);
+  const gmNova = nomeNova.filter(g => !nomeAtual.includes(g));
+  const gmAtualizada = nomeNova.filter(g => nomeAtual.includes(g));
+  const gmRemovida = nomeAtual.filter(g => !nomeNova.includes(g));
+
+  document.getElementById('previewSummary').innerHTML = `
+    <div class="prev-card"><div class="prev-val">${importDados.length}</div><div class="prev-lbl">Materiais</div></div>
+    <div class="prev-card"><div class="prev-val">${nomeNova.length}</div><div class="prev-lbl">GMs</div></div>
+    <div class="prev-card"><div class="prev-val">R$ ${importDados.reduce((s,m)=>s+m.precoLiquido,0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="prev-lbl">Valor Est.</div></div>
+  `;
+
+  // Table with diff
+  const fmtBRL2 = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const tbody = document.getElementById('previewTbody');
+  tbody.innerHTML = Object.entries(gmsNovas).map(([gm, d]) => {
+    const isNew = !nomeAtual.includes(gm);
+    const badge = isNew
+      ? '<span class="diff-badge diff-new">NOVA</span>'
+      : '<span class="diff-badge diff-upd">ATUALIZAR</span>';
+    return `<tr><td>${gm}</td><td>${d.count}</td><td>${fmtBRL2(d.total)}</td><td>${badge}</td></tr>`;
+  }).join('') + gmRemovida.map(gm =>
+    `<tr style="opacity:0.5"><td>${gm}</td><td>—</td><td>—</td><td><span class="diff-badge diff-rem">REMOVER*</span></td></tr>`
+  ).join('');
+
+  // Update merge option labels with real numbers
+  document.querySelector('#optReplace .merge-opt-desc').textContent =
+    `Remove todos os materiais atuais (${materiaisBase.length} itens) e usa os ${importDados.length} itens do arquivo importado.`;
+  document.querySelector('#optMerge .merge-opt-desc').textContent =
+    `${gmAtualizada.length} GMs serão atualizadas, ${gmNova.length} novas GMs serão adicionadas. Total resultante: estimado.`;
+  document.querySelector('#optAdd .merge-opt-desc').textContent =
+    `Apenas as ${gmNova.length} GMs completamente novas serão adicionadas. GMs existentes não serão alteradas.`;
+}
+
+function selectMergeOpt(mode) {
+  importMode = mode;
+  ['replace','merge','add'].forEach(m => {
+    document.getElementById('opt'+m.charAt(0).toUpperCase()+m.slice(1)).classList.toggle('selected', m===mode);
+  });
+}
+
+function confirmarImport() {
+  const gmsAtuais = getGMs();
+  const nomeAtual = Object.keys(gmsAtuais);
+
+  let novaBase;
+  if (importMode === 'replace') {
+    novaBase = importDados;
+  } else if (importMode === 'merge') {
+    // Replace existing GMs, add new ones
+    const novasGMs = {};
+    importDados.forEach(m => {
+      if (!novasGMs[m.grandeManutencao]) novasGMs[m.grandeManutencao] = [];
+      novasGMs[m.grandeManutencao].push(m);
+    });
+    // Keep GMs not in import, replace ones that are
+    const mantidos = materiaisBase.filter(m => !novasGMs[m.grandeManutencao]);
+    novaBase = [...mantidos, ...importDados];
+  } else { // add
+    const nomeNova = [...new Set(importDados.map(m=>m.grandeManutencao))];
+    const gmsSoNova = nomeNova.filter(g => !nomeAtual.includes(g));
+    novaBase = [...materiaisBase, ...importDados.filter(m=>gmsSoNova.includes(m.grandeManutencao))];
+  }
+
+  // Update in-memory
+  materiaisBase.length = 0;
+  novaBase.forEach(m => materiaisBase.push(m));
+
+  // Persist to localStorage as override
+  localStorage.setItem('cestaGM_baseOverride', JSON.stringify(novaBase));
+
+  // Build success message
+  const gmsResult = [...new Set(novaBase.map(m=>m.grandeManutencao))];
+  document.getElementById('successDesc').innerHTML = `
+    <strong>${novaBase.length} materiais</strong> em <strong>${gmsResult.length} Grandes Manutenções</strong> estão disponíveis agora.<br><br>
+    A base foi atualizada nesta sessão. Para tornar a atualização <strong>permanente no GitHub</strong>, baixe o HTML atualizado abaixo e substitua o arquivo no repositório.
+  `;
+
+  irParaStep(4);
+  document.getElementById('importNextBtn').style.display = 'none';
+  document.getElementById('importFooter').querySelector('.btn-secondary').textContent = 'Fechar';
+
+  // Refresh home
+  renderHome();
+  showToast(`Base atualizada: ${novaBase.length} materiais em ${gmsResult.length} GMs`, 'success');
+}
+
+function baixarHTMLAtualizado() {
+  // Get original HTML source and inject new materiaisBase
+  const novaBase = materiaisBase.slice();
+  const novoJson = JSON.stringify(novaBase, null, 0);
+
+  // Replace the data in the HTML source
+  const marker1 = 'let materiaisBase = ';
+  const marker2 = ';\n\n// ======================== ESTADO';
+  const src = htmlOriginalSrc;
+
+  const si = src.indexOf(marker1);
+  const ei = src.indexOf(marker2, si);
+
+  if (si < 0 || ei < 0) {
+    showToast('Erro ao localizar dados no HTML.', 'error');
+    return;
+  }
+
+  // Also clear localStorage override instruction in new file
+  const updatedHTML = src.slice(0, si + marker1.length) +
+    novoJson +
+    src.slice(ei);
+
+  const blob = new Blob([updatedHTML], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const date = new Date().toISOString().slice(0,10);
+  a.download = `cesta_gm_silvicultura_${date}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('HTML atualizado baixado! Envie para o GitHub.', 'success');
+}
+
+// Close on overlay click
+document.addEventListener('DOMContentLoaded', () => {
+  // Capture own source for later HTML export
+  htmlOriginalSrc = document.documentElement.outerHTML;
+
+  document.getElementById('importOverlay').addEventListener('click', function(e) {
+    if (e.target === this) fecharImport();
+  });
+
+  // Check for localStorage base override (applied from previous import session)
+  const override = localStorage.getItem('cestaGM_baseOverride');
+  if (override) {
+    try {
+      const parsed = JSON.parse(override);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        materiaisBase.length = 0;
+        parsed.forEach(m => materiaisBase.push(m));
+      }
+    } catch(e) {}
+  }
+});
+
+</script>
+
+<!-- IMPORT OVERLAY -->
+<div class="import-overlay" id="importOverlay">
+  <div class="import-modal">
+    <div class="import-header">
+      <div class="import-title">📥 Importar Nova Cesta</div>
+      <button class="import-close" onclick="fecharImport()">✕</button>
+    </div>
+    <div class="import-body">
+
+      <!-- STEP 1: Upload -->
+      <div class="import-step active" id="importStep1">
+        <div style="margin-bottom:16px">
+          <p style="font-size:13px;color:var(--text-muted);line-height:1.6">
+            Importe um arquivo Excel com a mesma estrutura da base atual.<br>
+            Colunas necessárias: <strong>OPERAÇÃO, NI, DESCRIÇÃO, GRANDE MANUTENÇÃO, PREÇO LÍQUIDO, AQUISIÇÃO</strong>.
+          </p>
+        </div>
+        <div class="dropzone" id="dropzone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <input type="file" id="fileInput" accept=".xlsx,.xlsb,.xls,.csv" onchange="onFileSelect(event)">
+          <div class="dropzone-icon">📂</div>
+          <div class="dropzone-title">Arraste o arquivo aqui ou clique para selecionar</div>
+          <div class="dropzone-sub">O mesmo arquivo BASE_MATERIAIS_GM que você já conhece</div>
+          <div class="format-badges">
+            <span class="format-badge">.xlsx</span>
+            <span class="format-badge">.xlsb</span>
+            <span class="format-badge">.xls</span>
+          </div>
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--text-muted)">
+          ⚠️ Somente dados da operação <strong>SILVICULTURA</strong> serão importados. Dados de COLHEITA são ignorados automaticamente.
+        </div>
+      </div>
+
+      <!-- STEP 2: Loading -->
+      <div class="import-step" id="importStep2">
+        <div class="import-loading">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px" id="loadingMsg">Lendo arquivo...</div>
+          <div style="font-size:13px;color:var(--text-muted)">Aguarde enquanto processamos os dados</div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Preview & Options -->
+      <div class="import-step" id="importStep3">
+        <div class="preview-summary" id="previewSummary"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:10px">GMs encontradas no arquivo:</div>
+        <div class="preview-table"><table id="previewTable"><thead><tr><th>Grande Manutenção</th><th>Itens</th><th>Valor Est.</th><th>Status</th></tr></thead><tbody id="previewTbody"></tbody></table></div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:10px">Modo de importação:</div>
+        <div class="merge-options">
+          <label class="merge-opt selected" id="optReplace">
+            <input type="radio" name="mergeMode" value="replace" checked onchange="selectMergeOpt('replace')">
+            <div><div class="merge-opt-title">🔄 Substituir base completa</div><div class="merge-opt-desc">Remove todos os materiais atuais e usa somente os do arquivo importado. Recomendado para atualizações completas.</div></div>
+          </label>
+          <label class="merge-opt" id="optMerge">
+            <input type="radio" name="mergeMode" value="merge" onchange="selectMergeOpt('merge')">
+            <div><div class="merge-opt-title">➕ Mesclar com base atual</div><div class="merge-opt-desc">Mantém os materiais existentes e adiciona os novos. GMs já existentes são atualizadas com os novos dados.</div></div>
+          </label>
+          <label class="merge-opt" id="optAdd">
+            <input type="radio" name="mergeMode" value="add" onchange="selectMergeOpt('add')">
+            <div><div class="merge-opt-title">📋 Adicionar apenas GMs novas</div><div class="merge-opt-desc">Ignora GMs que já existem na base. Adiciona somente Grandes Manutenções completamente novas.</div></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- STEP 4: Success -->
+      <div class="import-step" id="importStep4">
+        <div class="import-success">
+          <div class="success-icon">✅</div>
+          <div class="success-title">Base atualizada com sucesso!</div>
+          <div class="success-desc" id="successDesc"></div>
+          <button class="download-html-btn" onclick="baixarHTMLAtualizado()">
+            ⬇️ Baixar HTML Atualizado para GitHub
+          </button>
+          <div class="info-box">
+            <span>💡</span>
+            <span>Faça o download do HTML atualizado e substitua o arquivo no seu repositório GitHub. Assim todos que abrirem o link terão a base mais recente.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="import-footer" id="importFooter">
+      <button class="btn-lg btn-secondary" onclick="fecharImport()">Cancelar</button>
+      <button class="btn-lg btn-verde" id="importNextBtn" style="display:none" onclick="confirmarImport()">✓ Confirmar Importação</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
